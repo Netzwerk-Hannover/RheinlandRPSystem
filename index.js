@@ -8,6 +8,7 @@ import {
 import { env, bool } from './src/core/config.js';
 import { JsonStore } from './src/core/store.js';
 import { logger } from './src/core/logger.js';
+import { sendLog } from './src/core/brand.js';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const MODULE_DIR = path.join(ROOT, 'src', 'modules');
@@ -67,7 +68,10 @@ async function runModules(method, ...args) {
   for (const module of modules) {
     if (typeof module[method] !== 'function') continue;
     try { await module[method](...args, ctx); }
-    catch (error) { logger.error(`[${module.name}:${method}] ${error.stack ?? error.message}`); }
+    catch (error) {
+      logger.error(`[${module.name}:${method}] ${error.stack ?? error.message}`);
+      await sendLog(ctx, 'LOG_CHANNEL_ID', `Modulfehler: ${module.name}`, `Event: ${method}\n${error.stack ?? error.message}`);
+    }
   }
 }
 
@@ -111,6 +115,7 @@ client.once(Events.ClientReady, async (readyClient) => {
   catch (error) { logger.error(`[COMMANDS] Registrierung fehlgeschlagen: ${error.stack ?? error.message}`); }
   await runModules('setup');
   logger.info('[START] Alle Module wurden initialisiert.');
+  await sendLog(ctx, 'LOG_CHANNEL_ID', 'Bot gestartet', `Rheinland Netzwerk ist online.\nNode.js: ${process.version}\nGeladene Module: ${modules.length}\nSlash-Commands: ${commandJson.length}`);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -128,6 +133,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
   } catch (error) {
     logger.error(`[INTERACTION] ${error.stack ?? error.message}`);
+    await sendLog(ctx, 'LOG_CHANNEL_ID', 'Interaktionsfehler', error.stack ?? error.message);
     const payload = { content: 'Bei der Verarbeitung ist ein Fehler aufgetreten. Das Team wurde über den Fehler informiert.', ephemeral: true };
     if (interaction.deferred || interaction.replied) await interaction.followUp(payload).catch(() => null);
     else await interaction.reply(payload).catch(() => null);
@@ -154,10 +160,19 @@ const eventBindings = [
 for (const [event, method] of eventBindings) client.on(event, (...args) => runModules(method, ...args));
 
 client.on(Events.Warn, (warning) => logger.warn(warning));
-client.on(Events.Error, (error) => logger.error(`Discord-Client: ${error.stack ?? error.message}`));
+client.on(Events.Error, (error) => {
+  logger.error(`Discord-Client: ${error.stack ?? error.message}`);
+  void sendLog(ctx, 'LOG_CHANNEL_ID', 'Discord-Client-Fehler', error.stack ?? error.message);
+});
 client.on(Events.ShardError, (error, shardId) => logger.error(`Shard ${shardId}: ${error.message}`));
-process.on('unhandledRejection', (reason) => logger.error(`Unhandled rejection: ${reason?.stack ?? reason}`));
-process.on('uncaughtException', (error) => logger.error(`Uncaught exception: ${error.stack ?? error.message}`));
+process.on('unhandledRejection', (reason) => {
+  logger.error(`Unhandled rejection: ${reason?.stack ?? reason}`);
+  void sendLog(ctx, 'LOG_CHANNEL_ID', 'Unhandled Rejection', String(reason?.stack ?? reason));
+});
+process.on('uncaughtException', (error) => {
+  logger.error(`Uncaught exception: ${error.stack ?? error.message}`);
+  void sendLog(ctx, 'LOG_CHANNEL_ID', 'Uncaught Exception', error.stack ?? error.message);
+});
 
 async function shutdown(signal) {
   ctx.shuttingDown = true;
