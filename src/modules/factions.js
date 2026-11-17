@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder } from 'discord.js';
 import { env, list } from '../core/config.js';
-import { brandedEmbed, sendLog, sendPanel } from '../core/brand.js';
+import { attachAsset, brandedEmbed, sendLog, sendPanel } from '../core/brand.js';
 import { requireStaff } from '../core/permissions.js';
 
 const factionCommand = new SlashCommandBuilder().setName('fraktion').setDescription('Verwaltet die Fraktionen')
@@ -62,7 +62,8 @@ export default {
       const channel = channelId ? await ctx.client.channels.fetch(channelId).catch(() => null) : null;
       if (!channel?.isTextBased()) { await i.reply({ content: 'FRACTION_NEWS_CHANNEL_ID ist nicht eingerichtet.', ephemeral: true }); return; }
       const roleId = env('FRACTION_NEWS_ROLE_ID'); const title = i.options.getString('titel'); const text = i.options.getString('text');
-      await channel.send({ content: roleId ? `<@&${roleId}>` : undefined, embeds: [brandedEmbed(title, text)], allowedMentions: { roles: roleId ? [roleId] : [] } });
+      const newsEmbed = brandedEmbed(title, text);
+      await channel.send(await attachAsset({ content: roleId ? `<@&${roleId}>` : undefined, embeds: [newsEmbed], allowedMentions: { roles: roleId ? [roleId] : [] } }, 'Fraktionsnews'));
       await i.reply({ content: 'Fraktions-News wurden veröffentlicht.', ephemeral: true }); return;
     }
     if (!await requireStaff(i)) return;
@@ -126,7 +127,8 @@ export default {
         new ButtonBuilder().setCustomId(`application:decision:${key}:approve`).setLabel('Annehmen').setStyle(ButtonStyle.Success),
         new ButtonBuilder().setCustomId(`application:decision:${key}:reject`).setLabel('Ablehnen').setStyle(ButtonStyle.Danger),
       );
-      await channel.send({ embeds: [brandedEmbed('Neue Fraktionsbeantragung', `Antragsteller: <@${message.author.id}>\nFraktion: ${payload.name}\nLeitung: ${payload.leader}\nKonzept: ${payload.concept}\nMitglieder: ${payload.members}\nAktivität: ${payload.activity}`)], components: [row], allowedMentions: { parse: [] } });
+      const applicationEmbed = brandedEmbed('Neue Fraktionsbeantragung', `Antragsteller: <@${message.author.id}>\nFraktion: ${payload.name}\nLeitung: ${payload.leader}\nKonzept: ${payload.concept}\nMitglieder: ${payload.members}\nAktivität: ${payload.activity}`);
+      await channel.send(await attachAsset({ embeds: [applicationEmbed], components: [row], allowedMentions: { parse: [] } }, 'Fraktionsbewerbung'));
     }
     await message.reply('Dein Fraktionsantrag wurde vollständig übermittelt. Die Projektleitung erhält ihn im Bewerbungs-Log und meldet sich per DM.');
   },
