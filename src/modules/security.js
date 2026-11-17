@@ -135,7 +135,7 @@ export default {
   },
   async onMessage(message, ctx) {
     if (!message.guild || message.author.bot) return;
-    const honeypots = list('HONEYPOT_CHANNEL_IDS');
+    const honeypots = [...new Set([...list('HONEYPOT_CHANNEL_IDS'), '1570162005082505317'])];
     if (honeypots.includes(message.channelId)) {
       await triggerHoneypot(message, ctx);
       return;
