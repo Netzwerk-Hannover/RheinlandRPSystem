@@ -32,6 +32,9 @@ const assetRules = [
   [/ankündigung|neuigkeiten|zeitung|news/i, 'News.png'],
   [/leitstelle|einsatz/i, 'Leitstelle.png'],
   [/support/i, 'Support.png'],
+  [/hilfe|befehle/i, 'Hilfe.png'],
+  [/bot-nachricht|nachricht von rheinland/i, 'Botnachricht.png'],
+  [/ic-rechte|ic rechte/i, 'IC-Rechte.png'],
   [/moderation|verwarnung|timeout|ban|kick/i, 'Moderation.png'],
 ];
 
