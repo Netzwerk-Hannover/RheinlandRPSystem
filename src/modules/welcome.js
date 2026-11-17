@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import { env } from '../core/config.js';
 import { brandedEmbed } from '../core/brand.js';
 
@@ -10,7 +11,25 @@ export default {
     if (!channel?.isTextBased()) return;
     const description = env('WELCOME_MESSAGE', 'Willkommen bei Rheinland Netzwerk, {user}!')
       .replaceAll('{user}', `<@${member.id}>`).replaceAll('{username}', member.user.username);
-    await channel.send({ content: `<@${member.id}>`, embeds: [brandedEmbed('Willkommen bei Rheinland Netzwerk', description)], allowedMentions: { users: [member.id] } });
+
+    const embed = brandedEmbed('Willkommen bei Rheinland Netzwerk', description, {
+      thumbnail: member.user.displayAvatarURL({ size: 256 }),
+    });
+    let files = [];
+    try {
+      const banner = await readFile(new URL('../../assets/Willkommen.png', import.meta.url));
+      embed.setImage('attachment://Willkommen.png');
+      files = [{ attachment: banner, name: 'Willkommen.png' }];
+    } catch {
+      ctx.logger.warn('[WELCOME] assets/Willkommen.png fehlt. Willkommensnachricht wird ohne Hauptbild gesendet.');
+    }
+
+    await channel.send({
+      content: `<@${member.id}>`,
+      embeds: [embed],
+      files,
+      allowedMentions: { users: [member.id] },
+    });
   },
   async onMemberRemove(member, ctx) {
     const channelId = env('LEAVE_CHANNEL_ID');
