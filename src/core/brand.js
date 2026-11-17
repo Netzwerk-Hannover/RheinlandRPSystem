@@ -7,6 +7,7 @@ const missingAssets = new Set();
 const assetRules = [
   [/ticket/i, 'Ticket.png'],
   [/verifizierung|sicherheitsprüfung/i, 'Verify.png'],
+  [/fraktionsbewerbung|fraktionsbeantragung/i, 'Fraktionsbewerbung.png'],
   [/bewerbung/i, 'Bewerbung.png'],
   [/voraussetzungen/i, 'Voraussetzungen.png'],
   [/fraktionsliste|fraktionen/i, 'Fraktionen.png'],
@@ -24,6 +25,7 @@ const assetRules = [
   [/content-creator-regelwerk/i, 'Content-Creator-Regelwerk.png'],
   [/server-code/i, 'Servercode.png'],
   [/safezones/i, 'Safezones.png'],
+  [/mitglied ausgetreten|verlassen/i, 'Verlassen.png'],
   [/faq/i, 'FAQ.png'],
   [/teamliste/i, 'Teamliste.png'],
   [/teambesprechung/i, 'Teambesprechung.png'],
