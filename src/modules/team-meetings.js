@@ -1,5 +1,5 @@
 import { env } from '../core/config.js';
-import { brandedEmbed } from '../core/brand.js';
+import { attachAsset, brandedEmbed } from '../core/brand.js';
 
 export default {
   name: 'team-meetings',
@@ -17,7 +17,8 @@ export default {
       const channel = await ctx.client.channels.fetch(channelId).catch(() => null);
       if (!channel?.isTextBased()) return;
       const roleId = env('TEAM_PING_ROLE_ID');
-      await channel.send({ content: roleId ? `<@&${roleId}>` : undefined, embeds: [brandedEmbed('Teambesprechung • Rheinland Netzwerk', 'Die wöchentliche Teambesprechung beginnt jetzt.\n\n**Termin:** Freitag, 18:00 Uhr\nBitte pünktlich erscheinen.')], allowedMentions: { roles: roleId ? [roleId] : [] } });
+      const embed = brandedEmbed('Teambesprechung • Rheinland Netzwerk', 'Die wöchentliche Teambesprechung beginnt jetzt.\n\n**Termin:** Freitag, 18:00 Uhr\nBitte pünktlich erscheinen.');
+      await channel.send(await attachAsset({ content: roleId ? `<@&${roleId}>` : undefined, embeds: [embed], allowedMentions: { roles: roleId ? [roleId] : [] } }, 'Teambesprechung'));
       await ctx.db.set('teamMeetings', dateKey, { sentAt: Date.now() });
     }, 30000);
   },
