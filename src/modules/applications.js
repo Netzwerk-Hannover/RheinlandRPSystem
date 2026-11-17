@@ -89,7 +89,7 @@ export default {
       const key = `${i.user.id}-${Date.now()}`;
       await ctx.db.set('applications', key, data);
       await publishApplication(ctx, key, data);
-      await i.user.send({ embeds: [brandedEmbed('Bewerbung eingegangen', 'Deine Bewerbung ist bei Rheinland Netzwerk eingegangen. Das Team prüft sie und meldet sich per Direktnachricht bei dir.')] }).catch(() => null);
+      await i.user.send(await attachAsset({ embeds: [brandedEmbed('Bewerbung eingegangen', 'Deine Bewerbung ist bei Rheinland Netzwerk eingegangen. Das Team prüft sie und meldet sich per Direktnachricht bei dir.')] }, 'Bewerbung')).catch(() => null);
       await i.reply({ content: 'Deine Bewerbung wurde übermittelt. Du erhältst eine Rückmeldung per DM.', ephemeral: true });
       return true;
     }
@@ -110,7 +110,7 @@ export default {
       data.decidedAt = Date.now();
       data.decidedBy = i.user.id;
       await ctx.db.set('applications', key, data);
-      await i.message.edit({ embeds: [brandedEmbed(`Bewerbung ${data.status === 'accepted' ? 'angenommen' : 'abgelehnt'}`, `Bewerbung von <@${data.userId}>\nBearbeitet von: <@${i.user.id}>\nStatus: **${data.status === 'accepted' ? 'Angenommen' : 'Abgelehnt'}**`)], components: [] });
+      await i.message.edit(await attachAsset({ embeds: [brandedEmbed(`Bewerbung ${data.status === 'accepted' ? 'angenommen' : 'abgelehnt'}`, `Bewerbung von <@${data.userId}>\nBearbeitet von: <@${i.user.id}>\nStatus: **${data.status === 'accepted' ? 'Angenommen' : 'Abgelehnt'}**`)], components: [] }, 'Bewerbung'));
       const applicant = await ctx.client.users.fetch(data.userId).catch(() => null);
       await applicant?.send({ embeds: [brandedEmbed(data.status === 'accepted' ? 'Deine Bewerbung wurde angenommen' : 'Rückmeldung zu deiner Bewerbung', data.status === 'accepted' ? 'Deine Bewerbung bei Rheinland Netzwerk wurde angenommen. Das Team informiert dich über die nächsten Schritte.' : 'Deine Bewerbung wurde diesmal leider nicht angenommen. Vielen Dank für dein Interesse an Rheinland Netzwerk.')] }).catch(() => null);
       await i.reply({ content: `Bewerbung wurde ${data.status === 'accepted' ? 'angenommen' : 'abgelehnt'}. Die Person wurde per DM benachrichtigt.`, ephemeral: true });
