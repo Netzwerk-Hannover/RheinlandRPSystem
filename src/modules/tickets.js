@@ -12,11 +12,18 @@ const types = {
 };
 
 const panelRow = () => new ActionRowBuilder().addComponents(
-  new ButtonBuilder().setCustomId('ticket:open:support').setLabel('Support').setStyle(ButtonStyle.Primary),
-  new ButtonBuilder().setCustomId('ticket:open:highteam').setLabel('HighTeam').setStyle(ButtonStyle.Secondary),
-  new ButtonBuilder().setCustomId('ticket:open:fraction').setLabel('Fraktion').setStyle(ButtonStyle.Secondary),
-  new ButtonBuilder().setCustomId('ticket:open:unban').setLabel('Entbannung').setStyle(ButtonStyle.Danger),
-  new ButtonBuilder().setCustomId('ticket:open:leadership').setLabel('Leitung').setStyle(ButtonStyle.Secondary),
+  new StringSelectMenuBuilder()
+    .setCustomId('ticket:type')
+    .setPlaceholder('Ticketart auswählen')
+    .setMinValues(1)
+    .setMaxValues(1)
+    .addOptions(
+      { label: 'Support', value: 'support', description: 'Allgemeine Fragen und Hilfe' },
+      { label: 'HighTeam', value: 'highteam', description: 'Anliegen an das HighTeam' },
+      { label: 'Fraktion', value: 'fraction', description: 'Fraktionsfragen und Probleme' },
+      { label: 'Entbannung', value: 'unban', description: 'Einspruch gegen eine Sperre' },
+      { label: 'Leitung', value: 'leadership', description: 'Anliegen an Owner und Co-Owner' },
+    ),
 );
 const ticketButtons = () => new ActionRowBuilder().addComponents(
   new ButtonBuilder().setCustomId('ticket:claim').setLabel('Ticket übernehmen').setStyle(ButtonStyle.Primary),
@@ -102,11 +109,11 @@ export default {
     await interaction.reply({ content: ticket?.status === 'open' ? `Dein Ticket ist hier: <#${ticket.channelId}>` : 'Du kannst über das Ticket-Panel ein neues Ticket eröffnen.', ephemeral: true });
   },
   async onInteraction(i, ctx) {
-    if (i.isButton() && i.customId.startsWith('ticket:open:')) {
-      const type = i.customId.split(':')[2];
+    if (i.isStringSelectMenu() && i.customId === 'ticket:type') {
+      const type = i.values[0];
       if (!types[type]) { await i.reply({ content: 'Unbekannte Ticketart.', ephemeral: true }); return true; }
       const existing = ctx.db.get('tickets', i.user.id);
-      if (existing?.status === 'open') { await i.reply({ content: `Du hast bereits ein offenes Ticket: <#${existing.channelId}>`, ephemeral: true }); return true; }
+      if (existing?.status === 'open') { await i.reply({ content: 'Du hast bereits ein offenes Ticket: <#' + existing.channelId + '>', ephemeral: true }); return true; }
       await i.showModal(createTicketModal(type, i.user));
       return true;
     }
