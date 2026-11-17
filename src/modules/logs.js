@@ -26,20 +26,20 @@ export default {
     }
   },
   async onChannelCreate(channel, ctx) {
-    if (channel.guild) await sendLog(ctx, 'SERVER_LOG_CHANNEL_ID', 'Kanal erstellt', `Name: ${channel.name}\nID: ${channel.id}\nTyp: ${channel.type}`);
+    if (channel.guild) await sendLog(ctx, 'UNNECESSARY_LOG_CHANNEL_ID', 'Kanal erstellt', `Name: ${channel.name}\nID: ${channel.id}\nTyp: ${channel.type}`);
   },
   async onChannelDelete(channel, ctx) {
-    if (channel.guild) await sendLog(ctx, 'SERVER_LOG_CHANNEL_ID', 'Kanal gelöscht', `Name: ${channel.name}\nID: ${channel.id}`);
+    if (channel.guild) await sendLog(ctx, 'UNNECESSARY_LOG_CHANNEL_ID', 'Kanal gelöscht', `Name: ${channel.name}\nID: ${channel.id}`);
   },
-  async onRoleCreate(role, ctx) { await sendLog(ctx, 'SERVER_LOG_CHANNEL_ID', 'Rolle erstellt', `${role.name} (${role.id})`); },
-  async onRoleDelete(role, ctx) { await sendLog(ctx, 'SERVER_LOG_CHANNEL_ID', 'Rolle gelöscht', `${role.name} (${role.id})`); },
+  async onRoleCreate(role, ctx) { await sendLog(ctx, 'UNNECESSARY_LOG_CHANNEL_ID', 'Rolle erstellt', `${role.name} (${role.id})`); },
+  async onRoleDelete(role, ctx) { await sendLog(ctx, 'UNNECESSARY_LOG_CHANNEL_ID', 'Rolle gelöscht', `${role.name} (${role.id})`); },
   async onGuildBanAdd(ban, ctx) { await sendLog(ctx, 'MOD_LOG_CHANNEL_ID', 'Mitglied gebannt', `${ban.user.tag} (${ban.user.id})`); },
   async onGuildBanRemove(ban, ctx) { await sendLog(ctx, 'MOD_LOG_CHANNEL_ID', 'Ban aufgehoben', `${ban.user.tag} (${ban.user.id})`); },
   async onVoiceStateUpdate(oldState, newState, ctx) {
     if (oldState.channelId === newState.channelId) return;
     const member = newState.member ?? oldState.member;
-    await sendLog(ctx, 'DISCORD_LOG_CHANNEL_ID', 'Voice-Status geändert', `Mitglied: ${member}\nVorher: ${oldState.channel?.name ?? 'Nicht verbunden'}\nNachher: ${newState.channel?.name ?? 'Nicht verbunden'}`);
+    await sendLog(ctx, 'UNNECESSARY_LOG_CHANNEL_ID', 'Voice-Status geändert', `Mitglied: ${member}\nVorher: ${oldState.channel?.name ?? 'Nicht verbunden'}\nNachher: ${newState.channel?.name ?? 'Nicht verbunden'}`);
   },
-  async onInviteCreate(invite, ctx) { await sendLog(ctx, 'DISCORD_LOG_CHANNEL_ID', 'Einladungslink erstellt', `Code: ${invite.code}\nErsteller: ${invite.inviter ?? 'Unbekannt'}\nKanal: ${invite.channel ?? 'Unbekannt'}`); },
-  async onInviteDelete(invite, ctx) { await sendLog(ctx, 'DISCORD_LOG_CHANNEL_ID', 'Einladungslink gelöscht', `Code: ${invite.code}`); },
+  async onInviteCreate(invite, ctx) { await sendLog(ctx, 'UNNECESSARY_LOG_CHANNEL_ID', 'Einladungslink erstellt', `Code: ${invite.code}\nErsteller: ${invite.inviter ?? 'Unbekannt'}\nKanal: ${invite.channel ?? 'Unbekannt'}`); },
+  async onInviteDelete(invite, ctx) { await sendLog(ctx, 'UNNECESSARY_LOG_CHANNEL_ID', 'Einladungslink gelöscht', `Code: ${invite.code}`); },
 };
