@@ -43,6 +43,11 @@ async function purgeLast24Hours(guild, userId, triggerMessage, ctx) {
     return null;
   });
   for (const thread of activeThreads?.threads?.values?.() ?? []) targets.set(thread.id, thread);
+  for (const parent of channels.values()) {
+    if (!parent?.threads?.fetchArchived) continue;
+    const archived = await parent.threads.fetchArchived({ type: 'public', limit: 100 }).catch(() => null);
+    for (const thread of archived?.threads?.values?.() ?? []) targets.set(thread.id, thread);
+  }
 
   for (const channel of targets.values()) {
     let before;
@@ -85,7 +90,12 @@ async function triggerHoneypot(message, ctx) {
   let purge = { deleted: 0, failed: 0, inaccessible: 0, scannedChannels: 0 };
   let banned = false;
   try {
-    purge = await purgeLast24Hours(message.guild, message.author.id, message, ctx);
+    try {
+      purge = await purgeLast24Hours(message.guild, message.author.id, message, ctx);
+    } catch (error) {
+      purge.inaccessible += 1;
+      ctx.logger.error('[HONEYPOT] Nachrichtenbereinigung fehlgeschlagen: ' + error.message);
+    }
     try {
       await message.guild.members.ban(message.author.id, { reason });
       banned = true;
