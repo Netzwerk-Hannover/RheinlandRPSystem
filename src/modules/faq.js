@@ -59,22 +59,48 @@ export default {
   async setup(ctx) {
     const forum = await ctx.client.channels.fetch(env('FAQ_FORUM_CHANNEL_ID')).catch(() => null);
     if (!forum || forum.type !== ChannelType.GuildForum) return;
+
+    // Find existing active and archived FAQ posts so a reset JSON store cannot create copies.
+    const activeResult = await forum.threads.fetchActive().catch(() => null);
+    const archivedResult = await forum.threads.fetchArchived({ type: 'public', limit: 100 }).catch(() => null);
+    const knownThreads = new Map();
+    for (const thread of activeResult?.threads?.values?.() ?? []) knownThreads.set(thread.id, thread);
+    for (const thread of archivedResult?.threads?.values?.() ?? []) knownThreads.set(thread.id, thread);
+
     for (const [index, question] of questions.entries()) {
       const key = 'faq-' + index;
+      const threadName = question[0].slice(0, 100);
       const savedId = ctx.db.get('faqThreads', key);
-      const existing = savedId ? await forum.threads.fetch(savedId).catch(() => null) : null;
+      let existing = savedId ? await forum.threads.fetch(savedId).catch(() => null) : null;
+      const matching = [...knownThreads.values()]
+        .filter((thread) => thread.name === threadName)
+        .sort((a, b) => a.createdTimestamp - b.createdTimestamp);
+
+      if (!existing) existing = matching[0] ?? null;
       if (existing) {
+        await ctx.db.set('faqThreads', key, existing.id);
         const starter = await existing.fetchStarterMessage().catch(() => null);
-        if (starter) await starter.edit({ embeds: [makeAnswer(question)] }).catch((error) => ctx.logger.warn('[FAQ] Thread konnte nicht aktualisiert werden: ' + error.message));
+        if (starter) {
+          await starter.edit({ embeds: [makeAnswer(question)] }).catch((error) =>
+            ctx.logger.warn('[FAQ] Thread konnte nicht aktualisiert werden: ' + error.message));
+        }
+        for (const duplicate of matching) {
+          if (duplicate.id !== existing.id) {
+            await duplicate.delete().catch((error) =>
+              ctx.logger.warn('[FAQ] Doppelte FAQ konnte nicht entfernt werden: ' + error.message));
+          }
+        }
         continue;
       }
+
       try {
         const thread = await forum.threads.create({
-          name: question[0].slice(0, 100),
+          name: threadName,
           message: { embeds: [makeAnswer(question)] },
           autoArchiveDuration: 10080,
         });
         await ctx.db.set('faqThreads', key, thread.id);
+        knownThreads.set(thread.id, thread);
       } catch (error) {
         ctx.logger.warn('[FAQ] ' + error.message);
       }
