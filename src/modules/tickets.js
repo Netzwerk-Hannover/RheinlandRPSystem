@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, ModalBuilder, PermissionFlagsBits, SlashCommandBuilder, StringSelectMenuBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
 import { env, list, bool } from '../core/config.js';
-import { brandedEmbed, sendLog, sendPanel } from '../core/brand.js';
+import { attachAsset, brandedEmbed, sendLog, sendPanel } from '../core/brand.js';
 import { isStaff } from '../core/permissions.js';
 
 const types = {
@@ -165,12 +165,13 @@ export default {
           { name: 'Ticketart', value: types[type].label, inline: true },
           { name: 'Anliegen', value: form.details.slice(0, 1024) || '—' },
         ];
-        await channel.send({
+        const ticketEmbed = brandedEmbed(`Ticket: ${form.subject}`, 'Das Ticket wurde eröffnet. Ein Teammitglied kann es über „Ticket übernehmen“ annehmen.', { fields });
+        await channel.send(await attachAsset({
           content: `<@${i.user.id}>${mentions ? ` ${mentions}` : ''}`,
-          embeds: [brandedEmbed(`Ticket: ${form.subject}`, 'Das Ticket wurde eröffnet. Ein Teammitglied kann es über „Ticket übernehmen“ annehmen.', { fields })],
+          embeds: [ticketEmbed],
           components: [ticketButtons()],
           allowedMentions: { users: [i.user.id], roles },
-        });
+        }, 'Ticket'));
         await i.reply({ content: `Dein ${types[type].label}-Ticket wurde erstellt: ${channel}`, ephemeral: true });
         await sendLog(ctx, 'TICKET_LOG_CHANNEL_ID', `${types[type].label}-Ticket eröffnet`, `Ersteller: <@${i.user.id}>\nKanal: ${channel}\nRoblox: ${form.robloxName}\nDiscord: ${form.discordName}\nBetreff: ${form.subject}\nAnliegen: ${form.details}`);
       } catch (error) {
@@ -190,7 +191,7 @@ export default {
       entry.claimedAt = Date.now();
       await ctx.db.set('tickets', ownerId, entry);
       await i.reply({ content: 'Du hast dieses Ticket übernommen.', ephemeral: true });
-      await i.channel.send({ embeds: [brandedEmbed('Ticket übernommen', `Zuständiges Teammitglied: <@${i.user.id}>`)] });
+      await i.channel.send(await attachAsset({ embeds: [brandedEmbed('Ticket übernommen', `Zuständiges Teammitglied: <@${i.user.id}>`)] }, 'Ticket'));
       await sendLog(ctx, 'TICKET_LOG_CHANNEL_ID', 'Ticket übernommen', `Ticket: <#${i.channelId}>\nBearbeiter: <@${i.user.id}>`);
       return true;
     }
@@ -205,7 +206,7 @@ export default {
       entry.status = 'closed'; entry.closedAt = Date.now();
       if (i.user.id !== entry.ownerId && !entry.handlerId) entry.handlerId = i.user.id;
       await ctx.db.set('tickets', ownerId, entry);
-      await i.channel.send({ embeds: [brandedEmbed('Ticket geschlossen', `Geschlossen von <@${i.user.id}>. Die Bewertung wird per Direktnachricht angefragt.`)] });
+      await i.channel.send(await attachAsset({ embeds: [brandedEmbed('Ticket geschlossen', `Geschlossen von <@${i.user.id}>. Die Bewertung wird per Direktnachricht angefragt.`)] }, 'Ticket'));
       await i.channel.permissionOverwrites.edit(entry.ownerId, { SendMessages: false }).catch(() => null);
       await i.reply({ content: 'Ticket wurde geschlossen.', ephemeral: true });
 
