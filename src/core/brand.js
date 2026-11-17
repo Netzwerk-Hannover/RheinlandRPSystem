@@ -49,14 +49,16 @@ export async function sendPanel(ctx, key, channelEnv, payload) {
     // Recover an existing panel if the JSON store was reset or its message ID was lost.
     // Panels are posted in dedicated channels and use a stable first-embed title.
     let duplicates = [];
-    if (!panelMessage && panelTitle) {
+    if (panelTitle) {
       const recent = await channel.messages.fetch({ limit: 100 }).catch(() => null);
       duplicates = recent
         ? [...recent.values()].filter((message) =>
           message.author?.id === ctx.client.user.id
           && message.embeds?.some((embed) => embed.title === panelTitle))
         : [];
-      panelMessage = duplicates.sort((a, b) => a.createdTimestamp - b.createdTimestamp)[0] ?? null;
+      if (!panelMessage) {
+        panelMessage = duplicates.sort((a, b) => a.createdTimestamp - b.createdTimestamp)[0] ?? null;
+      }
     }
 
     if (panelMessage) {
