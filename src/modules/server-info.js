@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { env } from '../core/config.js';
-import { brandedEmbed, sendPanel } from '../core/brand.js';
+import { attachAsset, brandedEmbed, sendPanel } from '../core/brand.js';
 
 const description = () => {
   const code = env('SERVER_CODE') ? '`' + env('SERVER_CODE') + '`' : 'Der Server-Code ist aktuell noch nicht hinterlegt.';
@@ -21,6 +21,6 @@ export default {
     });
   },
   async execute(interaction) {
-    await interaction.reply({ embeds: [brandedEmbed('Rheinland Netzwerk • Server-Code', description())], ephemeral: true });
+    await interaction.reply(await attachAsset({ embeds: [brandedEmbed('Rheinland Netzwerk • Server-Code', description())], ephemeral: true }, 'Rheinland Netzwerk • Server-Code'));
   },
 };
