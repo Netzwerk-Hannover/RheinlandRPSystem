@@ -79,7 +79,7 @@ export function brandedEmbed(title, description = '', options = {}) {
     .setTitle(String(title).slice(0, 256))
     .setDescription(String(description).slice(0, 4096))
     .setColor(null)
-    .setFooter({ text: env('BRAND_FOOTER', env('BRAND_NAME', 'Rheinland Netzwerk')) })
+    .setFooter({ text: 'Rheinland Netzwerk - V2  •   Roleplay Server mit Niveau •  Since 2025' })
     .setTimestamp();
   if (options.fields?.length) embed.addFields(options.fields.slice(0, 25));
   if (options.image) embed.setImage(options.image);
