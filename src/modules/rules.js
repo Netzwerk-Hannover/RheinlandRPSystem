@@ -93,7 +93,7 @@ const ingameRules = () => [
   'Cheats, Skripte, unerlaubte Drittprogramme, Exploits und das absichtliche Ausnutzen von Spielfehlern zum eigenen Vorteil sind verboten. Melde reproduzierbare Fehler über ' + mention('BUG_CHANNEL_ID', '#bug-meldungen') + ' und nutze sie nicht weiter aus. Das Verbreiten von Exploits kann ebenfalls sanktioniert werden.',
   '',
   '**§ 17 • Beweise und Support**',
-  'Melde Regelverstöße möglichst zeitnah und sachlich über ' + mention('TICKET_PANEL_CHANNEL_ID', '#tickets'). ' + 'Sichere vorhandene Screenshots oder Videos unverändert. Manipulierte Beweise, falsche Anschuldigungen und das Veröffentlichen privater Supportinhalte sind untersagt.',
+  'Melde Regelverstöße möglichst zeitnah und sachlich über ' + mention('TICKET_PANEL_CHANNEL_ID', '#tickets') + '. Sichere vorhandene Screenshots oder Videos unverändert. Manipulierte Beweise, falsche Anschuldigungen und das Veröffentlichen privater Supportinhalte sind untersagt.',
   '',
   '**§ 18 • Schlussregel**',
   'Das Team bewertet jede Situation anhand des vollständigen Ablaufs, der verfügbaren Beweise, der Absicht und möglicher Wiederholungen. Bei Unklarheiten frage vor einer riskanten Handlung im Support nach. Dieses Regelwerk kann durch die Projektleitung aktualisiert werden.'
