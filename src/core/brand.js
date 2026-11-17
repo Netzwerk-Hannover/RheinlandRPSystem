@@ -5,7 +5,7 @@ export function brandedEmbed(title, description = '', options = {}) {
   const embed = new EmbedBuilder()
     .setTitle(String(title).slice(0, 256))
     .setDescription(String(description).slice(0, 4096))
-    .setColor(null)\n    .setColor(null)
+    .setColor(null)
     .setFooter({ text: env('BRAND_FOOTER', env('BRAND_NAME', 'Rheinland Netzwerk')) })
     .setTimestamp();
   if (options.fields?.length) embed.addFields(options.fields.slice(0, 25));
