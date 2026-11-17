@@ -161,7 +161,7 @@ const creatorRules = [
 ].join('\n');
 
 const rules = {
-  discord: { channel: 'RULES_DISCORD_CHANNEL_ID', title: 'Discord-Regelwerk', content: discordRules },
+  discord: { channel: 'RULES_DISCORD_CHANNEL_ID', title: 'Discord-Regelwerk', content: discordRules() },
   ingame: { channel: 'RULES_INGAME_CHANNEL_ID', title: 'Ingame-Regelwerk', content: ingameRules() },
   team: { channel: 'RULES_TEAM_CHANNEL_ID', title: 'Team-Regelwerk', content: env('RULES_TEAM', teamRules) },
   creator: { channel: 'RULES_CREATOR_CHANNEL_ID', title: 'Content-Creator-Regelwerk', content: env('RULES_CREATOR', creatorRules) },
