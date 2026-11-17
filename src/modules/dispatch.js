@@ -19,7 +19,8 @@ export default {
     const sub = i.options.getSubcommand();
     if (sub === 'liste') {
       const active = ctx.db.all('incidents').filter(([, v]) => v.status !== 'abgeschlossen');
-      await i.reply({ embeds: [brandedEmbed('Leitstelle • Aktive Einsätze', active.map(([id, v]) => `**${id}** · ${v.title}\nOrt: ${v.location}\nAbteilung: ${v.department}\nStatus: ${v.status}`).join('\n\n') || 'Keine aktiven Einsätze.')], ephemeral: true }); return;
+      const listEmbed = brandedEmbed('Leitstelle • Aktive Einsätze', active.map(([id, v]) => `**${id}** · ${v.title}\nOrt: ${v.location}\nAbteilung: ${v.department}\nStatus: ${v.status}`).join('\n\n') || 'Keine aktiven Einsätze.');
+      await i.reply(await attachAsset({ embeds: [listEmbed], ephemeral: true }, 'Leitstelle')); return;
     }
     if (!await requireStaff(i)) return;
     if (sub === 'erstellen') {
