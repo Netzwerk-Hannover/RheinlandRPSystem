@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, ModalBuilder, PermissionFlagsBits, SlashCommandBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, ModalBuilder, PermissionFlagsBits, SlashCommandBuilder, StringSelectMenuBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
 import { env, list, bool } from '../core/config.js';
 import { brandedEmbed, sendLog, sendPanel } from '../core/brand.js';
 import { isStaff } from '../core/permissions.js';
@@ -93,7 +93,7 @@ export default {
   commands: [new SlashCommandBuilder().setName('ticketinfo').setDescription('Zeigt Informationen zu deinem offenen Ticket').toJSON()],
   async setup(ctx) {
     await sendPanel(ctx, 'tickets', 'TICKET_PANEL_CHANNEL_ID', {
-      embeds: [brandedEmbed('Rheinland Netzwerk • Ticket-System', 'Wähle die passende Ticketart. Vor dem Erstellen öffnet sich ein Formular mit deinen Roblox- und Discord-Daten sowie deinem Anliegen.\n\n**Support** · Allgemeine Hilfe\n**HighTeam** · Anliegen an das HighTeam\n**Fraktion** · Fragen und Probleme zu Fraktionen\n**Entbannung** · Einspruch gegen einen Ban, inklusive Roblox-ID\n**Leitung** · Direkte Anliegen an Owner / Co-Owner')],
+      embeds: [brandedEmbed('Rheinland Netzwerk • Ticket-System', 'Wähle im Auswahlmenü genau eine Ticketart. Danach öffnet sich das passende Formular mit deinen Roblox- und Discord-Daten sowie deinem Anliegen.\n\n**Support** · Allgemeine Hilfe\n**HighTeam** · Anliegen an das HighTeam\n**Fraktion** · Fragen und Probleme zu Fraktionen\n**Entbannung** · Einspruch gegen einen Ban, inklusive Roblox-ID\n**Leitung** · Direkte Anliegen an Owner / Co-Owner')],
       components: [panelRow()],
     });
   },
