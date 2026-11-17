@@ -38,6 +38,17 @@ export default {
     if (!channel?.isTextBased()) return;
     const description = env('LEAVE_MESSAGE', '{username} hat Rheinland Netzwerk verlassen.')
       .replaceAll('{username}', member.user?.username ?? member.displayName ?? 'Ein Mitglied');
-    await channel.send({ embeds: [brandedEmbed('Mitglied ausgetreten', description)] });
+    const embed = brandedEmbed('Mitglied ausgetreten', description, {
+      thumbnail: member.user?.displayAvatarURL?.({ size: 256 }),
+    });
+    let files = [];
+    try {
+      const banner = await readFile(new URL('../../assets/Verlassen.png', import.meta.url));
+      embed.setImage('attachment://Verlassen.png');
+      files = [{ attachment: banner, name: 'Verlassen.png' }];
+    } catch {
+      ctx.logger.warn('[WELCOME] assets/Verlassen.png fehlt. Austrittsnachricht wird ohne Hauptbild gesendet.');
+    }
+    await channel.send({ embeds: [embed], files });
   },
 };
