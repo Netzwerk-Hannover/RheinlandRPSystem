@@ -51,6 +51,9 @@ Lege die PNG-Dateien direkt in diesen Ordner. Die Dateinamen müssen exakt so ge
 - `Selfroles.png` – Selbstauswahl-Rollen.
 - `News.png` – Neuigkeiten und Zeitungsbeiträge.
 - `Moderation.png` – Moderationsprotokolle.
+- `Hilfe.png` – Befehlsübersicht.
+- `Botnachricht.png` – direkte Bot-Nachrichten.
+- `IC-Rechte.png` – IC-Rechte-Anfragen.
 
 Die Bilder werden vom Bot automatisch anhand des jeweiligen Embed-Titels zugeordnet. Bereits vorhandene eigene Bilder in einem Embed werden nicht überschrieben. Fehlt eine Datei, wird die Nachricht trotzdem ohne dieses Bild gesendet.
 
