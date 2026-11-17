@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { env } from '../core/config.js';
-import { brandedEmbed, sendLog } from '../core/brand.js';
+import { attachAsset, brandedEmbed, sendLog } from '../core/brand.js';
 import { requireStaff } from '../core/permissions.js';
 
 export default {
@@ -14,7 +14,7 @@ export default {
       if (!await requireStaff(i)) return;
       const user = i.options.getUser('mitglied'); const message = i.options.getString('nachricht');
       try {
-        await user.send({ embeds: [brandedEmbed('Nachricht von Rheinland Netzwerk', message)] });
+        await user.send(await attachAsset({ embeds: [brandedEmbed('Nachricht von Rheinland Netzwerk', message)] }, 'Bot-Nachricht'));
         await i.reply({ content: `DM an ${user.tag} wurde versendet.`, ephemeral: true });
         await sendLog(ctx, 'DISCORD_LOG_CHANNEL_ID', 'Bot-DM versendet', `Empfänger: ${user.tag} (${user.id})\nVon: ${i.user.tag}`);
       } catch { await i.reply({ content: 'Die DM konnte nicht zugestellt werden (möglicherweise private Nachrichten deaktiviert).', ephemeral: true }); }
@@ -29,7 +29,7 @@ export default {
     if (!owner) { await i.reply({ content: 'Die zuständige Projektleitung ist derzeit nicht erreichbar.', ephemeral: true }); return; }
     const message = i.options.getString('anliegen');
     try {
-      await owner.send({ embeds: [brandedEmbed('Anfrage auf IC-Rechte', `Angefragt von: ${i.user.tag} (${i.user.id})\nServer: ${i.guild.name}\n\n**Anliegen**\n${message}`)] });
+      await owner.send(await attachAsset({ embeds: [brandedEmbed('Anfrage auf IC-Rechte', `Angefragt von: ${i.user.tag} (${i.user.id})\nServer: ${i.guild.name}\n\n**Anliegen**\n${message}`)] }, 'IC-Rechte'));
       if (env('IC_RIGHTS_LOG_CHANNEL_ID')) await sendLog(ctx, 'IC_RIGHTS_LOG_CHANNEL_ID', 'IC-Rechte angefragt', `Von: ${i.user}\nAnliegen: ${message}`);
       await i.reply({ content: 'Deine Anfrage wurde direkt an die zuständige Projektleitung gesendet.', ephemeral: true });
     } catch { await i.reply({ content: 'Die Anfrage konnte nicht per DM zugestellt werden. Bitte eröffne ein Ticket.', ephemeral: true }); }
