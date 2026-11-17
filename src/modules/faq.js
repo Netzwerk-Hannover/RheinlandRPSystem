@@ -1,6 +1,6 @@
 import { ChannelType, SlashCommandBuilder } from 'discord.js';
 import { env } from '../core/config.js';
-import { brandedEmbed } from '../core/brand.js';
+import { attachAsset, brandedEmbed } from '../core/brand.js';
 
 const channel = (key, fallback) => env(key) ? '<#' + env(key) + '>' : fallback;
 
@@ -81,7 +81,7 @@ export default {
         await ctx.db.set('faqThreads', key, existing.id);
         const starter = await existing.fetchStarterMessage().catch(() => null);
         if (starter) {
-          await starter.edit({ embeds: [makeAnswer(question)] }).catch((error) =>
+          await starter.edit(await attachAsset({ embeds: [makeAnswer(question)] }, 'FAQ')).catch((error) =>
             ctx.logger.warn('[FAQ] Thread konnte nicht aktualisiert werden: ' + error.message));
         }
         for (const duplicate of matching) {
@@ -96,7 +96,7 @@ export default {
       try {
         const thread = await forum.threads.create({
           name: threadName,
-          message: { embeds: [makeAnswer(question)] },
+          message: await attachAsset({ embeds: [makeAnswer(question)] }, 'FAQ'),
           autoArchiveDuration: 10080,
         });
         await ctx.db.set('faqThreads', key, thread.id);
@@ -108,9 +108,10 @@ export default {
   },
   async execute(interaction) {
     const fields = questions.map(([title, answer]) => ({ name: title, value: answer.slice(0, 1024), inline: false }));
-    await interaction.reply({
+    const payload = await attachAsset({
       embeds: [brandedEmbed('FAQ • Rheinland Netzwerk', 'Hier findest du Antworten zu Beitritt, Verifizierung, Regeln, Support, Bewerbungen und den wichtigsten Serverbereichen.', { fields })],
       ephemeral: true,
-    });
+    }, 'FAQ');
+    await interaction.reply(payload);
   },
 };
