@@ -172,13 +172,10 @@ export default {
   name: 'verify',
   async setup(ctx) {
     const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId('verify:start').setLabel('Captcha starten').setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId('verify:start').setLabel('Regeln akzeptieren & Captcha starten').setStyle(ButtonStyle.Primary),
     );
     await sendPanel(ctx, 'verify', 'VERIFY_CHANNEL_ID', {
-      embeds: [brandedEmbed(
-        env('VERIFY_PANEL_TITLE', 'Willkommen bei Rheinland Netzwerk'),
-        env('VERIFY_PANEL_TEXT', 'Starte die Sicherheitsprüfung, gib den Code aus dem Bild ein und erhalte danach Zugriff auf den Server. Bitte lies vorher die Regelwerke.'),
-      )],
+      embeds: [brandedEmbed('Verifizierung', "**Verifizierung**\n\nHey, mit dem Betätigen dieses Knopfes bestätigst du, dass du unser Discord-Regelwerk (<#1570164000426295436>) gelesen und verstanden hast.\n\n> **Wichtige Informationen!**\n>\n> Auf unserem Server gelten alle Discord-Regeln!\n>\n> Der Supporter bzw. der Administrator hat das letzte Wort.\n>\n> Mit dem Beitritt zum Ingame-Server bestätigst du, dass du unser <#1570163936530010152> gelesen und verstanden hast.\n\nBei weiteren Fragen gehe nach der Verifizierung in den Support und frage dort nach:\n<#1570169549632970752>\n\nMit freundlichen Grüßen\nRheinland Netzwerk Support-Team")],
       components: [row],
     });
   },
