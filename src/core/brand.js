@@ -13,7 +13,7 @@ const assetRules = [
   [/fraktionsliste|fraktionen/i, 'Fraktionen.png'],
   [/fraktions-news|fraktionsnews/i, 'Fraktionsnews.png'],
   [/fraktion beantragen|fraktionsbeantragung/i, 'Fraktionsbewerbung.png'],
-  [/bug melden|bug:/i, 'Bug.png'],
+  [/bug/i, 'Bug.png'],
   [/einführung/i, 'Einfuehrung.png'],
   [/selfroles/i, 'Selfroles.png'],
   [/schichtsystem/i, 'Schichtsystem.png'],
