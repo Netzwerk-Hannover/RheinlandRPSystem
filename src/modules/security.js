@@ -113,7 +113,7 @@ async function triggerHoneypot(message, ctx) {
       'Mitglied: ' + message.author.tag + ' (' + message.author.id + ')\nKanal: <#' + message.channelId + '>\nPermanenter Bann: ' + (banned ? 'erfolgreich' : 'fehlgeschlagen') + '\nGelöschte Nachrichten (letzte 24 h): ' + purge.deleted + '\nLöschfehler: ' + purge.failed + '\nNicht lesbare Kanäle/Threads: ' + purge.inaccessible + '\nGeprüfte Kanäle/aktive Threads: ' + purge.scannedChannels,
     );
   } finally {
-    // Der User ist nach erfolgreichem Bann ohnehin gesperrt. Der Schlüssel verhindert parallele Doppelaktionen.
+    honeypotProcessing.delete(key);
   }
 }
 
