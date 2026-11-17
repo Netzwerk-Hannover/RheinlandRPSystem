@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, ModalBuilder, SlashCommandBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
 import { env } from '../core/config.js';
-import { brandedEmbed, sendLog, sendPanel } from '../core/brand.js';
+import { attachAsset, brandedEmbed, sendLog, sendPanel } from '../core/brand.js';
 
 const makeModal = () => {
   const modal = new ModalBuilder().setCustomId('suggestion:submit').setTitle('Vorschlag einreichen');
@@ -25,7 +25,8 @@ export default {
       if (!channel?.isTextBased()) { await i.reply({ content: 'Der Vorschlagskanal ist nicht erreichbar.', ephemeral: true }); return true; }
       const title = i.fields.getTextInputValue('title'); const details = i.fields.getTextInputValue('details'); const id = `V-${Date.now().toString(36)}`;
       const payload = { authorId: i.user.id, title, details, votes: [], createdAt: Date.now() };
-      const messagePayload = { embeds: [brandedEmbed(title, `${details}\n\nEingereicht von: <@${i.user.id}>`, { fields: [{ name: 'Status', value: 'Neu' }, { name: 'Unterstützungen', value: '0' }] })], components: [voteRow(id)] };
+      const suggestionEmbed = brandedEmbed(title, `${details}\n\nEingereicht von: <@${i.user.id}>`, { fields: [{ name: 'Status', value: 'Neu' }, { name: 'Unterstützungen', value: '0' }] });
+      const messagePayload = await attachAsset({ embeds: [suggestionEmbed], components: [voteRow(id)] }, 'Vorschläge');
       let threadId;
       if (channel.type === ChannelType.GuildForum) {
         const thread = await channel.threads.create({ name: title.slice(0, 100), message: messagePayload, autoArchiveDuration: 10080 }); threadId = thread.id;
@@ -44,7 +45,7 @@ export default {
       if (entry.votes.includes(i.user.id)) entry.votes = entry.votes.filter((userId) => userId !== i.user.id); else entry.votes.push(i.user.id);
       await ctx.db.set('suggestions', id, entry);
       const embed = brandedEmbed(entry.title, `${entry.details}\n\nEingereicht von: <@${entry.authorId}>`, { fields: [{ name: 'Status', value: 'Neu' }, { name: 'Unterstützungen', value: String(entry.votes.length) }] });
-      await i.message.edit({ embeds: [embed], components: [voteRow(id, entry.votes.length)] });
+      await i.message.edit(await attachAsset({ embeds: [embed], components: [voteRow(id, entry.votes.length)] }, 'Vorschläge'));
       await i.reply({ content: 'Deine Stimme wurde aktualisiert.', ephemeral: true }); return true;
     }
     return false;
