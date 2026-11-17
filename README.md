@@ -1,89 +1,47 @@
 # Rheinland Netzwerk Bot
 
-Modularer Discord-Bot für Rheinland Netzwerk. Einstiegspunkt ist die **`index.js` im Repository-Hauptverzeichnis**. Zielplattform ist Bot-Hosting mit **Node.js 24**. Alle Server-IDs, Rollen, Kanäle und Moduloptionen werden zentral über `.env` konfiguriert. Embeds verwenden keine gesetzte Farbleiste; das Layout bleibt einheitlich und schlicht.
+Modularer Discord-Bot für Rheinland Netzwerk. Einstiegspunkt ist die **index.js im Repository-Hauptverzeichnis**. Zielplattform ist Bot-Hosting mit **Node.js 24**. Alle Server-IDs, Rollen, Kanäle und Moduloptionen werden zentral über `.env` konfiguriert.
 
 ## Installation auf Bot-Hosting
 
-1. Repository `Netzwerk-Hannover/RheinlandRPSystem` auf den Branch `main` laden bzw. verbinden.
+1. Repository `Netzwerk-Hannover/RheinlandRPSystem` auf Branch `main` verbinden.
 2. Runtime auf **Node.js 24** stellen.
-3. Startdatei / Startbefehl auf `node index.js` setzen. Die Datei `index.js` liegt direkt im Root.
+3. Startbefehl: `node index.js`. Die Datei `index.js` liegt direkt im Repository-Root.
 4. `npm install` ausführen.
-5. `.env.example` als `.env` übernehmen und Bot-Token, Application-ID, Server-ID sowie die noch offenen Kanal- und Rollen-IDs eintragen.
-6. Die GIF-Datei im Dateimanager als `assets/logo.gif` hochladen. `BOT_AVATAR_ON_START=true` aktiviert den Avatar-Upload beim Start. Der Discord-Endpunkt kann Avatar-Änderungen abhängig von den Bot-/Anwendungsrechten und Rate-Limits ablehnen; der Bot startet bei einem solchen Fehler trotzdem.
-7. Bot im Discord Developer Portal mit den erforderlichen Intents aktivieren und mit den benötigten Berechtigungen einladen.
+5. `.env.example` kopieren und als `.env` speichern. Bot-Token, Client-ID, Guild-ID und die noch fehlenden Rollen-IDs selbst im Hosting eintragen. **Nie einen Bot-Token in GitHub oder in einen Chat kopieren.**
+6. Das animierte GIF als `assets/logo.gif` hochladen. `BOT_AVATAR_ON_START=true` lädt es beim Start als Bot-Avatar hoch.
+7. Im Discord Developer Portal mindestens Server Members Intent und Message Content Intent einschalten.
 
-### Erforderliche Discord-Einstellungen
+Die Bot-Rolle muss über den Rollen liegen, die der Bot verwalten soll. Der Bot braucht abhängig von aktivierten Modulen u. a. Rollen verwalten, Kanäle verwalten, Nachrichten senden/verwalten, Threads erstellen, Audit-Log einsehen, Mitglieder moderieren/kicken/bannen und Voice verbinden/sprechen.
 
-Im Developer Portal müssen mindestens **Server Members Intent** und **Message Content Intent** eingeschaltet werden. Der Bot benötigt je nach aktivierten Modulen unter anderem Rollen verwalten, Kanäle verwalten, Nachrichten senden/verwalten, Threads erstellen/verwalten, Nachrichtenverlauf lesen, Mitglieder moderieren, Mitglieder kicken/bannen, Audit-Log einsehen und Voice verbinden/sprechen.
+## Ticket-System
 
-Die Bot-Rolle muss über den Rollen liegen, die er vergeben oder entfernen soll. Kategorien, Kanäle, Rollen und IDs müssen zum richtigen Discord-Server gehören.
+Das Panel in `TICKET_PANEL_CHANNEL_ID` bietet fünf Ticketarten:
+
+- **Support:** Roblox-Name, Discord-Name, Betreff und Ticket-Anliegen.
+- **HighTeam:** dasselbe Formular, in der HighTeam-Kategorie.
+- **Fraktion:** dasselbe Formular, in der Fraktions-Kategorie.
+- **Entbannung:** Roblox-Name, Discord-Name, Roblox-ID, Ban-Grund und Entbannungs-Begründung.
+- **Leitung:** Anliegen für Owner / Co-Owner; eine Kategorie kann später über `TICKET_CATEGORY_LEADERSHIP_ID` ergänzt werden.
+
+Jede Ticketart kann eigene Teamrollen erhalten (`TICKET_*_ROLE_IDS`). Ein Teammitglied kann ein Ticket übernehmen. Beim Schließen wird ein Transcript erzeugt und der Nutzer erhält eine Sternebewertung per DM. Die Bewertung wird mit dem tatsächlichen Bearbeiter protokolliert.
 
 ## Module
 
-Alle Module liegen einzeln unter `src/modules/` und werden beim Start automatisch geladen:
+Alle Module liegen einzeln unter `src/modules/` und werden automatisch geladen: Bewerbungen, Autorollen, Blacklist, Bot-DMs/IC-Rechte, Boosts, Bugs, Leitstelle/Einsätze, FAQ-Forum, Fraktionen, Hilfe, Einführung, Server-/Discord-/Team-Logs, Moderation, Zeitung, Regelwerke, Safezones, Anti-Raid/Anti-Nuke/Anti-Spam/Honeypot, Selfroles, Server-Code, Schichtsystem, Vorschläge, Support-Ping, Teamliste, Teamverwaltung, Team-Besprechung, Tickets, Verify, 24/7-Voice, Willkommen/Verlassen.
 
-| Datei | Funktion |
-|---|---|
-| `applications.js` | Team- und Fraktionsbewerbungen, Formular, DM-Bestätigung und Bewerbungs-Logs |
-| `autoroles.js` | Mehrere Autorollen beim Serverbeitritt |
-| `blacklist.js` | Blacklist verwalten, prüfen und gelistete Mitglieder beim Beitritt bannen |
-| `bot-dms.js` | Team-DMs und IC-Rechte-Anfragen direkt an die konfigurierte Projektleitung |
-| `boosts.js` | Server-Boost-Nachrichten |
-| `bugs.js` | Bug-Formular, Team-Ping und automatischer Thread |
-| `dispatch.js` | Leitstelle und Einsätze für Polizei, Feuerwehr, HARS, Tuningwerkstatt, Autohaus und Krankenhaus |
-| `faq.js` | FAQ im Forum mit vorbereiteten Fragen und `/faq` |
-| `factions.js` | Fraktionsverwaltung, Fraktionsliste, News, DM-Fraktionsbeantragung und Speicherung |
-| `help.js` | `/help`-Übersicht |
-| `introduction.js` | automatische Einführung / Onboarding |
-| `logs.js` | Discord-, Server-, Team-, Nachrichten-, Rollen-, Kanal-, Ban- und Voice-Logs |
-| `moderation.js` | Warn, Timeout, Kick, Ban, Purge und Slowmode |
-| `newspaper.js` | Zeitungsartikel mit Bild-Upload und optionalem Rollen-Ping |
-| `rules.js` | Discord-, Ingame-, Team- und Content-Creator-Regelwerke |
-| `safezones.js` | Safezone-Hinweise und Verwaltung |
-| `security.js` | Anti-Raid, Anti-Nuke, Anti-Spam, Wortfilter und Honeypot |
-| `selfroles.js` | konfigurierbare Selfroles per Buttons |
-| `server-info.js` | Server-Code, Voraussetzungen und wichtige Informationen |
-| `shifts.js` | Einstempeln, Ausstempeln, Zeiterfassung, Teamübersicht per `/schichtliste` und automatisches Ausstempeln nach 3 Stunden |
-| `suggestions.js` | Vorschläge mit automatisch erzeugtem Thread und Upvotes |
-| `support-ping.js` | Support-Rollen-Ping mit Cooldown |
-| `team.js` | Teamliste, höchste Teamrolle pro Person |
-| `team-management.js` | Uprank, Downrank, Teamwarnungen, Kick und Rollenverwaltung |
-| `team-meetings.js` | automatische Erinnerung zur Teambesprechung freitags um 18:00 Uhr (Europe/Berlin) |
-| `tickets.js` | Tickets, private Kanäle, Schließen, Sterne-Feedback und Bearbeiter-Log |
-| `verify.js` | Verifizierungs-Panel und Rollenvergabe |
-| `voice247.js` | 24/7-Voice-Raum mit Stille-Audio |
-| `welcome.js` | Willkommen und Verlassen |
+## Kanäle aus deiner aktuellen Zuordnung
 
-Gemeinsame Hilfsfunktionen, Datenbank und Design liegen unter `src/core/`.
+Die neuen Kanal-IDs sind in `.env.example` hinterlegt. Nicht gelieferte IDs (insbesondere Rollen, Token, Client-ID, Guild-ID, Teamliste, Einsatzkanal und Leitungskategorie) sind absichtlich leer.
 
 ## Speicherung
 
-Die Datenbank wird als JSON-Datei atomar nach `DATA_DIR/rheinland-data.json` geschrieben. Fraktionen, Bewerbungen, Tickets, Schichtzeiten, Feedback, Vorschläge, Bugreports, Warnungen, Blacklist, Panel-IDs und weitere Zustände bleiben bei Neustarts erhalten. Auf Bot-Hosting muss `DATA_DIR` auf einen **dauerhaft gespeicherten** Ordner zeigen, falls die Plattform das Dateisystem bei Deployments zurücksetzt.
-
-## Wichtige Konfiguration
-
-Die vollständige Variablenliste steht in `.env.example`. Besonders wichtig:
-
-- `DISCORD_TOKEN`, `CLIENT_ID`, `GUILD_ID`
-- `BOT_OWNER_IDS`, `ADMIN_ROLE_IDS`, `MANAGEMENT_ROLE_IDS`, `TEAM_ROLE_IDS`, `TEAM_HIERARCHY_ROLE_IDS`
-- `*_CHANNEL_ID` und `*_ROLE_ID` für die jeweiligen Module
-- `BOT_AVATAR_PATH`, `BOT_AVATAR_ON_START`
-- `DATA_DIR`
-- `ANTI_SPAM_*`, `ANTI_RAID_*`, `ANTI_NUKE_*`, `BLACKLIST_AUTO_BAN`, `HONEYPOT_CHANNEL_IDS`, `BAD_WORDS`
-- `SERVER_CODE`, `SERVER_JOIN_LINK`, `TEAM_REQUIREMENTS`, `TEAM_MEETING_CHANNEL_ID`
-
-Für `TEAM_HIERARCHY_ROLE_IDS` gilt: **höchste Rolle zuerst**, niedrigste Rolle zuletzt. `AUTOROLE_IDS` und `SELFROLE_OPTIONS` sind kommaseparierte Listen. `SELFROLE_OPTIONS` verwendet das Format `Anzeigename|ROLE_ID,Anzeigename|ROLE_ID`.
-
-`ANTI_NUKE_ACTION` steht standardmäßig auf `log`. Automatisches Bannen von mutmaßlichen Ausführenden sollte erst nach einem Test mit den tatsächlichen Audit-Log-Berechtigungen aktiviert werden.
+Die Datenbank liegt in `DATA_DIR/rheinland-data.json`. Auf Bot-Hosting muss `DATA_DIR` auf einen dauerhaft gespeicherten Pfad zeigen, damit Bewerbungen, Tickets, Schichten, Fraktionen, Feedback und weitere Daten Deployments und Neustarts überstehen.
 
 ## Slash-Commands
 
-Slash-Commands werden beim Bot-Start aus den einzelnen Modulen registriert. Ist `GUILD_ID` gesetzt, werden sie direkt für diesen Server registriert. Ohne `GUILD_ID` erfolgt eine globale Registrierung, deren Verfügbarkeit bei Discord länger dauern kann. Es gibt absichtlich keine Settings-Slash-Commands; die Konfiguration erfolgt über `.env`.
+Slash-Commands werden beim Start aus den Modulen registriert. Ist `GUILD_ID` gesetzt, werden sie direkt für diesen Server registriert. Es gibt absichtlich keine Settings-Slash-Commands; Einstellungen erfolgen zentral über `.env`.
 
 ## Prüfung
 
-`npm run check` prüft die JavaScript-Syntax der Startdatei und aller 29 Module sowie deren grundlegende Exportstruktur. Der Check benötigt keine installierten Discord-Pakete. Ein echter Gateway-, Rollen- und Berechtigungs-Test ist erst nach `npm install` mit gültigem Bot-Token in einem Testserver möglich.
-
-## Discord-Richtlinien
-
-Das Discord-Regelwerk verlinkt die offiziellen Seiten: [Terms of Service](https://discord.com/terms), [Privacy Policy](https://discord.com/privacy), [Community Guidelines](https://discord.com/guidelines), [Developer Terms of Service](https://discord.com/developers/docs/policies-and-agreements/developer-terms-of-service) und [Developer Policy](https://discord.com/developers/docs/policies-and-agreements/developer-policy).
+`npm run check` prüft die JavaScript-Syntax und die grundlegende Exportstruktur aller Module. Ein echter Gateway-, Rollen- und Berechtigungstest benötigt die Pakete und einen gültigen Token in der Hosting-Umgebung.

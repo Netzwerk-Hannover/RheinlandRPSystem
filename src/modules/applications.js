@@ -3,23 +3,21 @@ import { env, int, list } from '../core/config.js';
 import { brandedEmbed, sendLog, sendPanel } from '../core/brand.js';
 import { hasAnyRole, isStaff } from '../core/permissions.js';
 
-const buttons = () => new ActionRowBuilder().addComponents(
-  new ButtonBuilder().setCustomId('application:team').setLabel('Team-Bewerbung').setStyle(ButtonStyle.Primary),
-  new ButtonBuilder().setCustomId('application:fraction').setLabel('Fraktions-Bewerbung').setStyle(ButtonStyle.Secondary),
+const teamRow = () => new ActionRowBuilder().addComponents(
+  new ButtonBuilder().setCustomId('application:team').setLabel('Team-Bewerbung starten').setStyle(ButtonStyle.Primary),
 );
-
 const decisionRow = (key) => new ActionRowBuilder().addComponents(
   new ButtonBuilder().setCustomId(`application:decision:${key}:approve`).setLabel('Annehmen').setStyle(ButtonStyle.Success),
   new ButtonBuilder().setCustomId(`application:decision:${key}:reject`).setLabel('Ablehnen').setStyle(ButtonStyle.Danger),
 );
 
-async function openApplicationModal(interaction, type) {
-  const modal = new ModalBuilder().setCustomId(`application:${type}:modal`).setTitle(type === 'team' ? 'Team-Bewerbung' : 'Fraktions-Bewerbung');
+async function openApplicationModal(interaction) {
+  const modal = new ModalBuilder().setCustomId('application:team:modal').setTitle('Team-Bewerbung');
   modal.addComponents(
     new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('age').setLabel('Wie alt bist du?').setStyle(TextInputStyle.Short).setRequired(true).setMaxLength(3)),
-    new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('name').setLabel('Ingame-Name / gewünschte Fraktion').setStyle(TextInputStyle.Short).setRequired(true).setMaxLength(100)),
-    new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('experience').setLabel('Erfahrung').setStyle(TextInputStyle.Paragraph).setRequired(true).setMaxLength(800)),
-    new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('motivation').setLabel('Motivation').setStyle(TextInputStyle.Paragraph).setRequired(true).setMaxLength(800)),
+    new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('name').setLabel('Discord-/Ingame-Name').setStyle(TextInputStyle.Short).setRequired(true).setMaxLength(100)),
+    new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('experience').setLabel('Welche Erfahrung hast du?').setStyle(TextInputStyle.Paragraph).setRequired(true).setMaxLength(800)),
+    new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('motivation').setLabel('Warum möchtest du mitmachen?').setStyle(TextInputStyle.Paragraph).setRequired(true).setMaxLength(800)),
   );
   await interaction.showModal(modal);
 }
@@ -32,11 +30,7 @@ async function publishApplication(ctx, key, data) {
   const channel = channelId ? await ctx.client.channels.fetch(channelId).catch(() => null) : null;
   if (!channel?.isTextBased()) return;
   const description = `Bewerbung von <@${data.userId}>\nTyp: ${data.type === 'team' ? 'Team' : 'Fraktion'}\nAlter: ${data.age}\nName/Fraktion: ${data.name}\nErfahrung: ${data.experience}\nMotivation: ${data.motivation}`;
-  const message = await channel.send({
-    embeds: [brandedEmbed(`Neue ${data.type === 'team' ? 'Team-' : 'Fraktions-'}Bewerbung`, description)],
-    components: [decisionRow(key)],
-    allowedMentions: { parse: [] },
-  });
+  const message = await channel.send({ embeds: [brandedEmbed(`Neue ${data.type === 'team' ? 'Team-' : 'Fraktions-'}Bewerbung`, description)], components: [decisionRow(key)], allowedMentions: { parse: [] } });
   data.logChannelId = channel.id;
   data.logMessageId = message.id;
   await ctx.db.set('applications', key, data);
@@ -46,34 +40,38 @@ export default {
   name: 'bewerbungen',
   commands: [new SlashCommandBuilder().setName('bewerbung').setDescription('Öffnet das Bewerbungsformular').toJSON()],
   async setup(ctx) {
-    await sendPanel(ctx, 'applications', 'APPLICATION_PANEL_CHANNEL_ID', { embeds: [brandedEmbed('Rheinland Netzwerk • Bewerbungen', 'Du möchtest Teil des Teams oder einer Fraktion werden? Starte deine Bewerbung hier. Die Rückmeldung kommt per Direktnachricht.')], components: [buttons()] });
+    await sendPanel(ctx, 'applications-team', 'APPLICATION_PANEL_CHANNEL_ID', {
+      embeds: [brandedEmbed('Rheinland Netzwerk • Team-Bewerbung starten', 'Hier kannst du deine Bewerbung für das Team beginnen. Die Voraussetzungen findest du im separaten Voraussetzungen-Kanal. Nach dem Absenden erhältst du eine Bestätigung per DM.')],
+      components: [teamRow()],
+    });
+    await sendPanel(ctx, 'team-requirements', 'TEAM_REQUIREMENTS_CHANNEL_ID', {
+      embeds: [brandedEmbed('Rheinland Netzwerk • Voraussetzungen', env('TEAM_REQUIREMENTS', 'Mindestens 14 Jahre, PC ab HighTeam, gutes und funktionierendes Mikrofon, Zuverlässigkeit und Teamfähigkeit.'))],
+    });
   },
-  async execute(i) { await openApplicationModal(i, 'team'); },
+  async execute(i) { await openApplicationModal(i); },
   async onInteraction(i, ctx) {
     if (!i.isButton?.() && !i.isModalSubmit?.()) return false;
 
-    if (i.isButton() && ['application:team', 'application:fraction'].includes(i.customId)) {
-      const type = i.customId.endsWith('team') ? 'team' : 'fraction';
-      if (type === 'team') {
-        await openApplicationModal(i, type);
-      } else {
-        if (ctx.db.get('fractionFlows', i.user.id)) {
-          await i.reply({ content: 'Du hast bereits eine laufende Fraktionsbeantragung per DM.', ephemeral: true });
-          return true;
-        }
-        try {
-          await i.user.send('**Rheinland Netzwerk • Fraktion beantragen**\nIch stelle dir nacheinander fünf Fragen. Antworte bitte jeweils direkt auf diese DM.\n\n**1/5:** Wie soll deine Fraktion heißen?');
-          await ctx.db.set('fractionFlows', i.user.id, { step: 0, answers: [], startedAt: Date.now() });
-          await i.reply({ content: 'Ich habe dir den Fraktions-Fragebogen per DM geschickt. Beantworte dort die Fragen nacheinander.', ephemeral: true });
-        } catch {
-          await i.reply({ content: 'Ich konnte dir keine DM senden. Aktiviere Direktnachrichten vom Server und starte erneut.', ephemeral: true });
-        }
+    if (i.isButton() && i.customId === 'application:team') {
+      await openApplicationModal(i);
+      return true;
+    }
+    if (i.isButton() && i.customId === 'application:fraction') {
+      if (ctx.db.get('fractionFlows', i.user.id)) {
+        await i.reply({ content: 'Du hast bereits eine laufende Fraktionsbeantragung per DM.', ephemeral: true });
+        return true;
+      }
+      try {
+        await i.user.send('**Rheinland Netzwerk • Fraktion beantragen**\nIch stelle dir nacheinander fünf Fragen. Antworte bitte jeweils direkt auf diese DM.\n\n**1/5:** Wie soll deine Fraktion heißen?');
+        await ctx.db.set('fractionFlows', i.user.id, { step: 0, answers: [], startedAt: Date.now() });
+        await i.reply({ content: 'Ich habe dir den Fraktions-Fragebogen per DM geschickt. Beantworte dort die Fragen nacheinander.', ephemeral: true });
+      } catch {
+        await i.reply({ content: 'Ich konnte dir keine DM senden. Aktiviere Direktnachrichten vom Server und starte erneut.', ephemeral: true });
       }
       return true;
     }
 
-    if (i.isModalSubmit() && i.customId.startsWith('application:') && i.customId.endsWith(':modal')) {
-      const type = i.customId.split(':')[1];
+    if (i.isModalSubmit() && i.customId === 'application:team:modal') {
       const ageText = i.fields.getTextInputValue('age').trim();
       const age = Number.parseInt(ageText, 10);
       if (!Number.isInteger(age) || age < 1 || age > 99) {
@@ -81,11 +79,11 @@ export default {
         return true;
       }
       const minimumAge = int('TEAM_MIN_AGE', 14, 12, 99);
-      if (type === 'team' && age < minimumAge) {
+      if (age < minimumAge) {
         await i.reply({ content: `Für eine Team-Bewerbung musst du mindestens ${minimumAge} Jahre alt sein.`, ephemeral: true });
         return true;
       }
-      const data = { type, userId: i.user.id, age: String(age), name: i.fields.getTextInputValue('name'), experience: i.fields.getTextInputValue('experience'), motivation: i.fields.getTextInputValue('motivation'), createdAt: Date.now(), status: 'open' };
+      const data = { type: 'team', userId: i.user.id, age: String(age), name: i.fields.getTextInputValue('name'), experience: i.fields.getTextInputValue('experience'), motivation: i.fields.getTextInputValue('motivation'), createdAt: Date.now(), status: 'open' };
       const key = `${i.user.id}-${Date.now()}`;
       await ctx.db.set('applications', key, data);
       await publishApplication(ctx, key, data);

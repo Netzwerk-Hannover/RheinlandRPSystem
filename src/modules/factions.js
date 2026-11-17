@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder } from 'discord.js';
 import { env, list } from '../core/config.js';
-import { brandedEmbed, sendLog } from '../core/brand.js';
+import { brandedEmbed, sendLog, sendPanel } from '../core/brand.js';
 import { requireStaff } from '../core/permissions.js';
 
 const factionCommand = new SlashCommandBuilder().setName('fraktion').setDescription('Verwaltet die Fraktionen')
@@ -10,6 +10,21 @@ const factionCommand = new SlashCommandBuilder().setName('fraktion').setDescript
   .addSubcommand((s) => s.setName('entfernen').setDescription('Mitglied entfernen').addStringOption((o) => o.setName('name').setDescription('Fraktionsname').setRequired(true)).addUserOption((o) => o.setName('mitglied').setDescription('Mitglied').setRequired(true)))
   .addSubcommand((s) => s.setName('liste').setDescription('Alle Fraktionen anzeigen')).toJSON();
 
+const applyButton = () => new ActionRowBuilder().addComponents(
+  new ButtonBuilder().setCustomId('application:fraction').setLabel('Fraktion beantragen').setStyle(ButtonStyle.Primary),
+);
+async function buildFactionEmbed(ctx) {
+  const factions = ctx.db.all('factions');
+  const fields = factions.slice(0, 25).map(([name, value]) => ({
+    name,
+    value: `Leitung: ${value.leaderId ? `<@${value.leaderId}>` : 'Nicht festgelegt'}\nRolle: ${value.roleId ? `<@&${value.roleId}>` : 'Nicht festgelegt'}\nMitglieder: ${value.members?.length ?? 0}\n${(value.members ?? []).slice(0, 12).map((id) => `<@${id}>`).join(', ') || 'Keine Mitglieder'}`,
+  }));
+  return brandedEmbed('Rheinland Netzwerk • Fraktionsliste', 'Übersicht der registrierten Fraktionen.', { fields });
+}
+async function refreshFactionPanel(ctx) {
+  await sendPanel(ctx, 'fraction-list', 'FRACTION_LIST_CHANNEL_ID', { embeds: [await buildFactionEmbed(ctx)] });
+}
+
 export default {
   name: 'fraktionssystem',
   commands: [
@@ -18,24 +33,28 @@ export default {
     new SlashCommandBuilder().setName('fraknews').setDescription('Veröffentlicht Fraktions-News').addStringOption((o) => o.setName('titel').setDescription('Überschrift').setRequired(true).setMaxLength(100)).addStringOption((o) => o.setName('text').setDescription('Nachricht').setRequired(true).setMaxLength(1800)).toJSON(),
     new SlashCommandBuilder().setName('fraktion-beantragen').setDescription('Stellt eine Fraktionsbewerbung per Formular').toJSON(),
   ],
+  async setup(ctx) {
+    await refreshFactionPanel(ctx);
+    await sendPanel(ctx, 'fraction-news-info', 'FRACTION_NEWS_CHANNEL_ID', {
+      embeds: [brandedEmbed('Rheinland Netzwerk • Fraktions-News', 'Hier veröffentlicht die Projektleitung offizielle Neuigkeiten und Informationen zu den Fraktionen.')],
+    });
+    await sendPanel(ctx, 'fraction-apply-info', 'FRACTION_APPLICATION_PANEL_CHANNEL_ID', {
+      embeds: [brandedEmbed('Rheinland Netzwerk • Fraktion beantragen', 'Über den Button startest du die Beantragung deiner eigenen Fraktion. Der Fragebogen wird dir per Direktnachricht gestellt.')],
+      components: [applyButton()],
+    });
+  },
   async execute(i, ctx) {
     if (i.commandName === 'fraktion-beantragen') {
       if (ctx.db.get('fractionFlows', i.user.id)) { await i.reply({ content: 'Du hast bereits eine laufende Fraktionsbeantragung per DM. Beantworte zuerst die offenen Fragen.', ephemeral: true }); return; }
-      const flow = { step: 0, answers: [], startedAt: Date.now() };
       try {
         await i.user.send('**Rheinland Netzwerk • Fraktion beantragen**\nIch stelle dir nacheinander fünf Fragen. Antworte bitte jeweils direkt auf diese DM.\n\n**1/5:** Wie soll deine Fraktion heißen?');
-        await ctx.db.set('fractionFlows', i.user.id, flow);
-        await i.reply({ content: 'Ich habe dir eine DM mit dem Fraktions-Fragebogen geschickt. Beantworte dort die Fragen der Reihe nach.', ephemeral: true });
-      } catch {
-        await i.reply({ content: 'Ich konnte dir keine DM senden. Aktiviere Direktnachrichten vom Server und starte den Befehl erneut.', ephemeral: true });
-      }
+        await ctx.db.set('fractionFlows', i.user.id, { step: 0, answers: [], startedAt: Date.now() });
+        await i.reply({ content: 'Ich habe dir eine DM mit dem Fraktions-Fragebogen geschickt.', ephemeral: true });
+      } catch { await i.reply({ content: 'Ich konnte dir keine DM senden. Aktiviere Direktnachrichten vom Server und starte erneut.', ephemeral: true }); }
       return;
     }
     if (i.commandName === 'frakliste' || (i.commandName === 'fraktion' && i.options.getSubcommand() === 'liste')) {
-      const factions = ctx.db.all('factions');
-      const fields = factions.slice(0, 25).map(([name, value]) => ({ name, value: `Leitung: <@${value.leaderId}>\nRolle: ${value.roleId ? `<@&${value.roleId}>` : 'Nicht festgelegt'}\nMitglieder: ${value.members?.length ?? 0}\n${(value.members ?? []).slice(0, 12).map((id) => `<@${id}>`).join(', ') || 'Keine Mitglieder'}` }));
-      await i.reply({ embeds: [brandedEmbed('Rheinland Netzwerk • Fraktionsliste', 'Übersicht der registrierten Fraktionen.', { fields })], ephemeral: i.commandName === 'fraktion' });
-      return;
+      await i.reply({ embeds: [await buildFactionEmbed(ctx)], ephemeral: i.commandName === 'fraktion' }); return;
     }
     if (i.commandName === 'fraknews') {
       if (!await requireStaff(i)) return;
@@ -70,6 +89,7 @@ export default {
       else { entry.members = (entry.members ?? []).filter((id) => id !== member.id); if (entry.roleId) await guildMember?.roles.remove(entry.roleId).catch(() => null); if (entry.leaderId === member.id) entry.leaderId = entry.members[0] ?? null; }
       await ctx.db.set('factions', name, entry); await i.reply({ content: `${member} wurde ${sub === 'hinzufuegen' ? 'zu' : 'aus'} **${name}** ${sub === 'hinzufuegen' ? 'hinzugefügt' : 'entfernt'}.`, ephemeral: true });
     }
+    await refreshFactionPanel(ctx);
     await sendLog(ctx, 'TEAM_LOG_CHANNEL_ID', 'Fraktionsverwaltung', `Aktion: ${sub}\nFraktion: ${name}\nVon: ${i.user}`);
   },
   async onMessage(message, ctx) {
@@ -98,19 +118,15 @@ export default {
     await ctx.db.set('fractionApplications', key, payload);
     await ctx.db.set('applications', key, application);
     await ctx.db.delete('fractionFlows', message.author.id);
-    const logEnv = env('FRACTION_APPLICATION_LOG_CHANNEL_ID') ? 'FRACTION_APPLICATION_LOG_CHANNEL_ID' : 'APPLICATION_LOG_CHANNEL_ID';
-    const channelId = env(logEnv);
+    const channelKey = env('FRACTION_APPLICATION_LOG_CHANNEL_ID') ? 'FRACTION_APPLICATION_LOG_CHANNEL_ID' : 'APPLICATION_LOG_CHANNEL_ID';
+    const channelId = env(channelKey);
     const channel = channelId ? await ctx.client.channels.fetch(channelId).catch(() => null) : null;
     if (channel?.isTextBased()) {
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(`application:decision:${key}:approve`).setLabel('Annehmen').setStyle(ButtonStyle.Success),
         new ButtonBuilder().setCustomId(`application:decision:${key}:reject`).setLabel('Ablehnen').setStyle(ButtonStyle.Danger),
       );
-      await channel.send({
-        embeds: [brandedEmbed('Neue Fraktionsbeantragung', `Antragsteller: <@${message.author.id}>\nFraktion: ${payload.name}\nLeitung: ${payload.leader}\nKonzept: ${payload.concept}\nMitglieder: ${payload.members}\nAktivität: ${payload.activity}`)],
-        components: [row],
-        allowedMentions: { parse: [] },
-      });
+      await channel.send({ embeds: [brandedEmbed('Neue Fraktionsbeantragung', `Antragsteller: <@${message.author.id}>\nFraktion: ${payload.name}\nLeitung: ${payload.leader}\nKonzept: ${payload.concept}\nMitglieder: ${payload.members}\nAktivität: ${payload.activity}`)], components: [row], allowedMentions: { parse: [] } });
     }
     await message.reply('Dein Fraktionsantrag wurde vollständig übermittelt. Die Projektleitung erhält ihn im Bewerbungs-Log und meldet sich per DM.');
   },
