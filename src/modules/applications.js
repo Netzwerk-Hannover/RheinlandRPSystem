@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, SlashCommandBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
 import { env, int, list } from '../core/config.js';
-import { brandedEmbed, sendLog, sendPanel } from '../core/brand.js';
+import { attachAsset, brandedEmbed, sendLog, sendPanel } from '../core/brand.js';
 import { hasAnyRole, isStaff } from '../core/permissions.js';
 
 const teamRow = () => new ActionRowBuilder().addComponents(
@@ -30,7 +30,9 @@ async function publishApplication(ctx, key, data) {
   const channel = channelId ? await ctx.client.channels.fetch(channelId).catch(() => null) : null;
   if (!channel?.isTextBased()) return;
   const description = `Bewerbung von <@${data.userId}>\nTyp: ${data.type === 'team' ? 'Team' : 'Fraktion'}\nAlter: ${data.age}\nName/Fraktion: ${data.name}\nErfahrung: ${data.experience}\nMotivation: ${data.motivation}`;
-  const message = await channel.send({ embeds: [brandedEmbed(`Neue ${data.type === 'team' ? 'Team-' : 'Fraktions-'}Bewerbung`, description)], components: [decisionRow(key)], allowedMentions: { parse: [] } });
+  const embed = brandedEmbed(`Neue ${data.type === 'team' ? 'Team-' : 'Fraktions-'}Bewerbung`, description);
+  const payload = await attachAsset({ embeds: [embed], components: [decisionRow(key)], allowedMentions: { parse: [] } }, embed.data.title);
+  const message = await channel.send(payload);
   data.logChannelId = channel.id;
   data.logMessageId = message.id;
   await ctx.db.set('applications', key, data);
