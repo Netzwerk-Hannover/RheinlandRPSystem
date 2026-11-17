@@ -12,6 +12,7 @@ export default {
     const embed = brandedEmbed(
       'Vielen Dank für deinen Server-Boost!',
       'Deine Unterstützung hilft Rheinland Netzwerk. Wir bedanken uns herzlich!',
+      { thumbnail: newMember.user.displayAvatarURL({ size: 256 }) },
     );
     let files = [];
     try {
