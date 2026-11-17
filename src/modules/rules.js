@@ -97,7 +97,7 @@ const ingameRules = () => [
   '',
   '**§ 18 • Schlussregel**',
   'Das Team bewertet Kontext, Beweise, Absicht und Wiederholungen. Bei Unklarheiten frage vor einer riskanten Handlung im Support nach. Die Projektleitung kann Regeln aktualisieren.'
-].join('\\n');
+].join('\n');
 
 const teamRules = [
   '**§ 1 • Auftreten und Verantwortung**',
