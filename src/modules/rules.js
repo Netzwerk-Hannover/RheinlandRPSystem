@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { env } from '../core/config.js';
-import { brandedEmbed, sendPanel } from '../core/brand.js';
+import { attachAsset, brandedEmbed, sendPanel } from '../core/brand.js';
 
 const choices = [
   { name: 'Discord-Regelwerk', value: 'discord' },
@@ -184,6 +184,6 @@ export default {
       await interaction.reply({ content: 'Dieses Regelwerk wurde nicht gefunden.', ephemeral: true });
       return;
     }
-    await interaction.reply({ embeds: [brandedEmbed('Rheinland Netzwerk • ' + rule.title, rule.content)], ephemeral: true });
+    await interaction.reply(await attachAsset({ embeds: [brandedEmbed('Rheinland Netzwerk • ' + rule.title, rule.content)], ephemeral: true }, 'Rheinland Netzwerk • ' + rule.title));
   },
 };
