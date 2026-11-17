@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from 'discord.js';
-import { brandedEmbed } from '../core/brand.js';
+import { attachAsset, brandedEmbed } from '../core/brand.js';
 
 export default {
   name: 'hilfe',
@@ -14,6 +14,6 @@ export default {
       { name: 'Community', value: '`/zeitung` · `/vorschlag-panel` · `/bug-panel`' },
       { name: 'Moderation / Verwaltung', value: '`/warn` · `/timeout` · `/untimeout` · `/kick` · `/ban` · `/purge` · `/slowmode` · `/blacklist` · `/uprank` · `/downrank` · `/teamupdate` · `/botdm`' },
     ];
-    await i.reply({ embeds: [brandedEmbed('Rheinland Netzwerk • Befehle', 'Die verfügbaren Befehle hängen von deinen Rollen und den aktivierten Modulen ab.', { fields })], ephemeral: true });
+    await i.reply(await attachAsset({ embeds: [brandedEmbed('Rheinland Netzwerk • Befehle', 'Die verfügbaren Befehle hängen von deinen Rollen und den aktivierten Modulen ab.', { fields })], ephemeral: true }, 'Hilfe'));
   },
 };
