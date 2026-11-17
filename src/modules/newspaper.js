@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { env } from '../core/config.js';
-import { brandedEmbed, sendLog } from '../core/brand.js';
+import { attachAsset, brandedEmbed, sendLog } from '../core/brand.js';
 import { requireStaff } from '../core/permissions.js';
 
 export default {
@@ -18,7 +18,7 @@ export default {
     if (attachment && !attachment.contentType?.startsWith('image/')) { await i.reply({ content: 'Der Anhang muss eine Bilddatei sein.', ephemeral: true }); return; }
     const roleId = i.options.getBoolean('ping') ? env('NEWSPAPER_DEFAULT_PING_ROLE_ID') : '';
     const embed = brandedEmbed(i.options.getString('titel'), i.options.getString('text'), { image: attachment?.url });
-    await channel.send({ content: roleId ? `<@&${roleId}>` : undefined, embeds: [embed], allowedMentions: { roles: roleId ? [roleId] : [] } });
+    await channel.send(await attachAsset({ content: roleId ? `<@&${roleId}>` : undefined, embeds: [embed], allowedMentions: { roles: roleId ? [roleId] : [] } }, 'News'));
     await i.reply({ content: 'Zeitungsartikel wurde veröffentlicht.', ephemeral: true });
     await sendLog(ctx, 'SERVER_LOG_CHANNEL_ID', 'Zeitungsartikel veröffentlicht', `Titel: ${i.options.getString('titel')}\nVon: ${i.user}`);
   },
