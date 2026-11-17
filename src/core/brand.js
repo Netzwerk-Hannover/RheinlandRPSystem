@@ -5,13 +5,13 @@ import { env } from './config.js';
 const missingAssets = new Set();
 
 const assetRules = [
-  [/ticket-system|ticket:/i, 'Ticket.png'],
+  [/ticket/i, 'Ticket.png'],
   [/verifizierung|sicherheitsprüfung/i, 'Verify.png'],
-  [/team-bewerbung|bewerbung/i, 'Bewerbung.png'],
+  [/bewerbung/i, 'Bewerbung.png'],
   [/voraussetzungen/i, 'Voraussetzungen.png'],
   [/fraktionsliste|fraktionen/i, 'Fraktionen.png'],
-  [/fraktions-news/i, 'Fraktionsnews.png'],
-  [/fraktion beantragen/i, 'Fraktionsbewerbung.png'],
+  [/fraktions-news|fraktionsnews/i, 'Fraktionsnews.png'],
+  [/fraktion beantragen|fraktionsbeantragung/i, 'Fraktionsbewerbung.png'],
   [/bug melden|bug:/i, 'Bug.png'],
   [/einführung/i, 'Einfuehrung.png'],
   [/selfroles/i, 'Selfroles.png'],
@@ -26,9 +26,11 @@ const assetRules = [
   [/safezones/i, 'Safezones.png'],
   [/faq/i, 'FAQ.png'],
   [/teamliste/i, 'Teamliste.png'],
-  [/ankündigung|neuigkeiten|zeitung/i, 'News.png'],
+  [/teambesprechung/i, 'Teambesprechung.png'],
+  [/ankündigung|neuigkeiten|zeitung|news/i, 'News.png'],
   [/leitstelle|einsatz/i, 'Leitstelle.png'],
   [/support/i, 'Support.png'],
+  [/moderation|verwarnung|timeout|ban|kick/i, 'Moderation.png'],
 ];
 
 function assetFor(title, channelEnv = '') {
