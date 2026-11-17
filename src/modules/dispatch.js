@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { env } from '../core/config.js';
-import { brandedEmbed, sendLog } from '../core/brand.js';
+import { attachAsset, brandedEmbed, sendLog } from '../core/brand.js';
 import { requireStaff } from '../core/permissions.js';
 
 const deptChoices = [
@@ -29,7 +29,11 @@ export default {
       await ctx.db.set('incidents', id, entry);
       const channelId = env('EINSATZ_CHANNEL_ID'); const channel = channelId ? await ctx.client.channels.fetch(channelId).catch(() => null) : null;
       const roleId = env(roleFor(department));
-      if (channel?.isTextBased()) await channel.send({ content: roleId ? `<@&${roleId}>` : undefined, embeds: [brandedEmbed(`Leitstelle • ${title}`, `**Einsatz-ID:** ${id}\n**Ort:** ${location}\n**Abteilung:** ${department.toUpperCase()}\n**Lage:** ${entry.details || 'Keine weiteren Angaben'}\n**Status:** Aktiv`) ], allowedMentions: { roles: roleId ? [roleId] : [] } });
+      if (channel?.isTextBased()) {
+        const embed = brandedEmbed(`Leitstelle • ${title}`, `**Einsatz-ID:** ${id}\n**Ort:** ${location}\n**Abteilung:** ${department.toUpperCase()}\n**Lage:** ${entry.details || 'Keine weiteren Angaben'}\n**Status:** Aktiv`);
+        const payload = await attachAsset({ content: roleId ? `<@&${roleId}>` : undefined, embeds: [embed], allowedMentions: { roles: roleId ? [roleId] : [] } }, 'Leitstelle');
+        await channel.send(payload);
+      }
       await i.reply({ content: `Einsatz **${id}** wurde eröffnet.`, ephemeral: true });
       await sendLog(ctx, 'SERVER_LOG_CHANNEL_ID', 'Neuer Einsatz', `${id}: ${title}\nOrt: ${location}\nAbteilung: ${department}\nErstellt von: ${i.user}`);
     } else {
