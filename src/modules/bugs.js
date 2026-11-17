@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, ModalBuilder, SlashCommandBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
 import { env } from '../core/config.js';
-import { brandedEmbed, sendLog, sendPanel } from '../core/brand.js';
+import { attachAsset, brandedEmbed, sendLog, sendPanel } from '../core/brand.js';
 
 export default {
   name: 'bugreports',
@@ -24,7 +24,8 @@ export default {
       if (!channel?.isTextBased()) { await i.reply({ content: 'Der Bug-Kanal ist nicht erreichbar.', ephemeral: true }); return true; }
       const title = i.fields.getTextInputValue('title'); const steps = i.fields.getTextInputValue('steps'); const expected = i.fields.getTextInputValue('expected') || 'Nicht angegeben';
       const roleId = env('BUG_TEAM_ROLE_ID') || env('TEAM_PING_ROLE_ID');
-      const payload = { content: roleId ? `<@&${roleId}>` : undefined, embeds: [brandedEmbed(`Bug: ${title}`, `**Gemeldet von:** <@${i.user.id}>\n**Reproduktionsschritte:**\n${steps}\n\n**Erwartetes Verhalten:**\n${expected}`)], allowedMentions: { roles: roleId ? [roleId] : [] } };
+      const embed = brandedEmbed(`Bug: ${title}`, `**Gemeldet von:** <@${i.user.id}>\n**Reproduktionsschritte:**\n${steps}\n\n**Erwartetes Verhalten:**\n${expected}`);
+      const payload = await attachAsset({ content: roleId ? `<@&${roleId}>` : undefined, embeds: [embed], allowedMentions: { roles: roleId ? [roleId] : [] } }, 'Bug');
       let threadId;
       if (channel.type === ChannelType.GuildForum) { const thread = await channel.threads.create({ name: title.slice(0, 100), message: payload, autoArchiveDuration: 10080 }); threadId = thread.id; }
       else { const message = await channel.send(payload); const thread = await message.startThread({ name: title.slice(0, 100), autoArchiveDuration: 10080 }); threadId = thread.id; }
