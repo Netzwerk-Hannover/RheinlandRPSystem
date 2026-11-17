@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { env, list } from '../core/config.js';
-import { brandedEmbed, sendPanel } from '../core/brand.js';
+import { attachAsset, brandedEmbed, sendPanel } from '../core/brand.js';
 import { isTeam } from '../core/permissions.js';
 
 async function buildTeamEmbed(guild) {
@@ -41,7 +41,7 @@ export default {
     if (!i.isButton() || i.customId !== 'teamlist:refresh') return false;
     await i.deferReply({ ephemeral: true });
     const embed = await buildTeamEmbed(i.guild);
-    await i.editReply({ embeds: [embed] });
+    await i.editReply(await attachAsset({ embeds: [embed] }, 'Teamliste'));
     await refreshPanel(ctx);
     return true;
   },
@@ -52,6 +52,6 @@ export default {
   },
   async execute(i) {
     await i.deferReply({ ephemeral: true });
-    await i.editReply({ embeds: [await buildTeamEmbed(i.guild)] });
+    await i.editReply(await attachAsset({ embeds: [await buildTeamEmbed(i.guild)] }, 'Teamliste'));
   },
 };
