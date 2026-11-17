@@ -9,11 +9,11 @@ export default {
     if (!channelId) return;
     const channel = await ctx.client.channels.fetch(channelId).catch(() => null);
     if (!channel?.isTextBased()) return;
-    const description = "**Herzlich willkommen auf Rheinland Netzwerk**\n\nHey {user}, danke, dass du zu uns gefunden hast. Wir sind Rheinland Netzwerk, ein deutscher Mid-Hardcore-Roleplay-Server auf Roblox (Notruf Hamburg).\n\n> **Schritt-für-Schritt-Anleitung, um dich einzufinden**\n>\n> Gehe zur Verifizierung und verifiziere dich:\n> <#1570163281786839071>\n>\n> Als Nächstes gehe zum Discord-Regelwerk und lies es aufmerksam:\n> <#1570164000426295436>\n>\n> Zuletzt kannst du dir den Discord in Ruhe anschauen und Hallo sagen:\n> <#1570167414107414528>\n\nViel Spaß und hoffentlich ein gutes Roleplay!\n\nDein *Rheinland Netzwerk Support-Team*"
+    const description = "Hey {user}, danke, dass du zu uns gefunden hast. Wir sind Rheinland Netzwerk, ein deutscher Mid-Hardcore-Roleplay-Server auf Roblox (Notruf Hamburg).\n\n> **Schritt-für-Schritt-Anleitung, um dich einzufinden**\n>\n> Gehe zur Verifizierung und verifiziere dich:\n> <#1570163281786839071>\n>\n> Als Nächstes gehe zum Discord-Regelwerk und lies es aufmerksam:\n> <#1570164000426295436>\n>\n> Zuletzt kannst du dir den Discord in Ruhe anschauen und Hallo sagen:\n> <#1570167414107414528>\n\nViel Spaß und hoffentlich ein gutes Roleplay!\n\nDein *Rheinland Netzwerk Support-Team*"
       .replaceAll('{user}', `<@${member.id}>`)
       .replaceAll('{username}', member.user.username);
 
-    const embed = brandedEmbed('Willkommen bei Rheinland Netzwerk', description, {
+    const embed = brandedEmbed('Herzlich willkommen auf Rheinland Netzwerk', description, {
       thumbnail: member.user.displayAvatarURL({ size: 256 }),
     });
     let files = [];
