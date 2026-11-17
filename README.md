@@ -22,7 +22,7 @@ Das Panel in `TICKET_PANEL_CHANNEL_ID` bietet fünf Ticketarten:
 - **HighTeam:** dasselbe Formular, in der HighTeam-Kategorie.
 - **Fraktion:** dasselbe Formular, in der Fraktions-Kategorie.
 - **Entbannung:** Roblox-Name, Discord-Name, Roblox-ID, Ban-Grund und Entbannungs-Begründung.
-- **Leitung:** Anliegen für Owner / Co-Owner; eine Kategorie kann später über `TICKET_CATEGORY_LEADERSHIP_ID` ergänzt werden.
+- **Leitung:** Anliegen für Owner / Co-Owner; wenn `TICKET_CATEGORY_LEADERSHIP_ID` leer ist, wird die Leitungskategorie beim ersten Leitungsticket automatisch erstellt; alternativ kann ihre bestehende Kategorie-ID dort eingetragen werden.
 
 Jede Ticketart kann eigene Teamrollen erhalten (`TICKET_*_ROLE_IDS`). Ein Teammitglied kann ein Ticket übernehmen. Beim Schließen wird ein Transcript erzeugt und der Nutzer erhält eine Sternebewertung per DM. Die Bewertung wird mit dem tatsächlichen Bearbeiter protokolliert.
 

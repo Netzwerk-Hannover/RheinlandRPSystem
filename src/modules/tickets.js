@@ -67,6 +67,27 @@ function ticketPermissionOverwrites(guild, userId, botId, roles) {
   ];
 }
 
+async function ensureLeadershipCategory(guild, ctx) {
+  const savedId = ctx.db.get('ticketCategories', 'leadership');
+  const saved = savedId ? await guild.channels.fetch(savedId).catch(() => null) : null;
+  if (saved?.type === ChannelType.GuildCategory) return saved.id;
+
+  const roles = staffRoles('leadership');
+  const category = await guild.channels.create({
+    name: env('TICKET_CATEGORY_LEADERSHIP_NAME', 'Leitungs Ticket (Owner Co Owner)'),
+    type: ChannelType.GuildCategory,
+    permissionOverwrites: [
+      { id: guild.roles.everyone.id, deny: [PermissionFlagsBits.ViewChannel] },
+      { id: ctx.client.user.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.ManageChannels, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory] },
+      ...roles.map((id) => ({ id, allow: [PermissionFlagsBits.ViewChannel] })),
+    ],
+    reason: 'Rheinland Netzwerk: Leitungsticket-Kategorie automatisch erstellen',
+  });
+  await ctx.db.set('ticketCategories', 'leadership', category.id);
+  await sendLog(ctx, 'SERVER_LOG_CHANNEL_ID', 'Ticket-Kategorie erstellt', `Die Kategorie ${category.name} wurde automatisch angelegt. ID: ${category.id}`);
+  return category.id;
+}
+
 export default {
   name: 'tickets',
   commands: [new SlashCommandBuilder().setName('ticketinfo').setDescription('Zeigt Informationen zu deinem offenen Ticket').toJSON()],
@@ -112,7 +133,8 @@ export default {
 
       const guild = i.guild;
       const roles = staffRoles(type);
-      const categoryId = env(types[type].category);
+      let categoryId = env(types[type].category);
+      if (type === 'leadership' && !categoryId) categoryId = await ensureLeadershipCategory(guild, ctx);
       const category = categoryId ? await guild.channels.fetch(categoryId).catch(() => null) : null;
       if (categoryId && (!category || category.type !== ChannelType.GuildCategory)) {
         await i.reply({ content: `Die Ticket-Kategorie für ${types[type].label} ist nicht erreichbar oder keine Discord-Kategorie.`, ephemeral: true });
