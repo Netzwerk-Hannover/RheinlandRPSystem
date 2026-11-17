@@ -54,7 +54,7 @@ export default {
       return;
     }
     if (i.commandName === 'frakliste' || (i.commandName === 'fraktion' && i.options.getSubcommand() === 'liste')) {
-      await i.reply({ embeds: [await buildFactionEmbed(ctx)], ephemeral: i.commandName === 'fraktion' }); return;
+      await i.reply(await attachAsset({ embeds: [await buildFactionEmbed(ctx)], ephemeral: i.commandName === 'fraktion' }, 'Fraktionen')); return;
     }
     if (i.commandName === 'fraknews') {
       if (!await requireStaff(i)) return;
