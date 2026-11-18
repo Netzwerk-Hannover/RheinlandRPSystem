@@ -45,6 +45,7 @@ async function processMembers(interaction, ctx, action, role, members, includeBo
   let failed = 0;
   let skipped = members.size - candidates.length;
   let processed = 0;
+  let lastProgress = 0;
   const reason = `Massrole ${action} durch ${interaction.user.tag} (${interaction.user.id})`;
 
   await interaction.editReply({
@@ -72,7 +73,8 @@ async function processMembers(interaction, ctx, action, role, members, includeBo
     }
     processed += batch.length;
 
-    if (processed % PROGRESS_EVERY === 0 || processed === candidates.length) {
+    if (processed - lastProgress >= PROGRESS_EVERY || processed === candidates.length) {
+      lastProgress = processed;
       await interaction.editReply({
         content: `Massrole läuft für <@&${role.id}> …\nFortschritt: **${processed} / ${candidates.length}**\nErfolgreich: ${succeeded} · Fehlgeschlagen: ${failed} · Übersprungen: ${skipped}`,
         allowedMentions: { roles: [] },
@@ -94,7 +96,9 @@ async function processMembers(interaction, ctx, action, role, members, includeBo
     allowedMentions: { roles: [] },
   }).catch(() => null);
 
-  await sendLog(ctx, 'MOD_LOG_CHANNEL_ID', 'Massrole ausgeführt', summary);
+  await sendLog(ctx, 'MOD_LOG_CHANNEL_ID', 'Massrole ausgeführt', summary).catch((error) => {
+    ctx.logger.warn(`[MASSROLE] Abschluss konnte nicht in den Mod-Logs protokolliert werden: ${error.message}`);
+  });
   ctx.logger.info(`[MASSROLE] ${summary.replaceAll('\n', ' | ')}`);
 }
 
@@ -189,6 +193,7 @@ export default {
       clearTimeout(timeout);
       collector.stop('confirmed');
       await component.deferUpdate();
+      await component.editReply({ content: 'Mitglieder werden geladen …', components: [] });
 
       const currentRole = await component.guild.roles.fetch(pending.roleId).catch(() => null);
       const currentBotMember = component.guild.members.me
