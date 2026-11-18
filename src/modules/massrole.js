@@ -6,7 +6,7 @@ import {
   SlashCommandBuilder,
 } from 'discord.js';
 import { randomUUID } from 'node:crypto';
-import { requireStaff } from '../core/permissions.js';
+import { isOwner, requireStaff } from '../core/permissions.js';
 import { sendLog } from '../core/brand.js';
 
 const pendingActions = new Map();
@@ -134,6 +134,11 @@ export default {
     const action = interaction.options.getSubcommand();
     const role = interaction.options.getRole('rolle', true);
     const includeBots = interaction.options.getBoolean('bots') ?? false;
+
+    if (action === 'add' && role.permissions.has(PermissionFlagsBits.Administrator) && !isOwner(interaction.user.id)) {
+      await interaction.reply({ content: 'Eine Administrator-Rolle darf nur der eingetragene Bot-Owner per Massrole vergeben.', ephemeral: true });
+      return;
+    }
 
     if (role.id === interaction.guild.id || role.managed || !role.editable) {
       await interaction.reply({ content: 'Diese Rolle kann ich nicht verwalten. Prüfe, ob sie eine Integrationsrolle oder höher als meine Bot-Rolle ist.', ephemeral: true });
